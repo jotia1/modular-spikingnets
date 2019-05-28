@@ -176,12 +176,13 @@ for sec = 1 : net.sim_time_sec
     
 out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
 out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
-if mod(sec, 1) == 0 && net.print_progress
-    fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
-    clf;
+if mod(sec, 50) == 0 && net.print_progress
+    %fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
+    %clf;
     % TODO : Fix plotting
     %rasterspiketimes(spike_time_trace, 2000, 1);
-    drawnow;
+    %drawnow;
+    var = 1;
 end
 
 end    % of seconds for loop

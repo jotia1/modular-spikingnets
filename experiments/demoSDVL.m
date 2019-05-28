@@ -39,11 +39,11 @@ net.variance(1:3, 4:5) = 2;
 net.w = zeros(net.N);
 net.w(1:3, 4:5) = 1;
 
-net.fgi = 60;
-net.nu = 0.3;
+net.fgi = 66;
+net.nu = 0.03;
 net.nv = 0.01;
-net.a1 = 3;%-33.2;
-net.a2 = 2; %35.6;
+net.a1 = 2;%-33.2;
+net.a2 = 1; %35.6;
 net.b1 = 5; %24.9;
 net.b2 = 5; %82.3;
 net.variance_min = 0.1;
@@ -64,7 +64,7 @@ net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
 
-net.sim_time_sec = 300;
+net.sim_time_sec = 500;
 net.seq = [0, 3, 7];
 net.seq_freq_ms = 500;
 net.supervised_seconds = 0;
@@ -74,7 +74,7 @@ net.supervising = true;
 [p1inp, p1ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, 120, 60, 13);
 [p2inp, p2ts] = createTwoPatternInput(fliplr(net.seq), net.seq, net.seq_freq_ms, 30, 0, 13);
 [p3inp, p3ts] = createTwoPatternInput(fliplr(net.seq), net.seq, net.seq_freq_ms, 120, 60, 13);
-[p4inp, p4ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, 30, 0, 13);
+[p4inp, p4ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, 230, 0, 13);
 
 net.inp = [p1inp, p2inp, p3inp, p4inp];
 net.ts = [p1ts, p2ts + (120 * 1000), p3ts + (150 * 1000), p4ts + (270 * 1000)];

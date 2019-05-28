@@ -32,9 +32,9 @@ legend({'N4', 'N5', 'n4Thres', 'n5thresh'});
 hold off
 
 subplot(2, 2, 4);
-plot(out.spike_time_trace(out.spike_time_trace(:, 2) == 4, 1), mod(out.spike_time_trace(out.spike_time_trace(:, 2) == 4, 1), 500))
+plot(out.spike_time_trace(out.spike_time_trace(:, 2) == 4, 1), mod(out.spike_time_trace(out.spike_time_trace(:, 2) == 4, 1), 500), '.')
 hold on
-plot(out.spike_time_trace(out.spike_time_trace(:, 2) == 5, 1), mod(out.spike_time_trace(out.spike_time_trace(:, 2) == 5, 1), 500))
+plot(out.spike_time_trace(out.spike_time_trace(:, 2) == 5, 1), mod(out.spike_time_trace(out.spike_time_trace(:, 2) == 5, 1), 500), '.')
 hold off
 %axis([-Inf Inf 5 14]);
 title('output spike time');
