@@ -28,6 +28,8 @@ N_inp = net.group_sizes(1);
 v = ones(N, 1) * net.v_rest;
 vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
 last_spike_time = zeros(net.N, 1) * -Inf;
+p = zeros(net.N);
+gauss = @(x, s, p) p .* exp(- (x .^ 2) ./ (2 * s));
 % Dynamic threshold stuff
 v_thres = ones(size(v)) * net.v_thres;
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
@@ -78,11 +80,13 @@ for sec = 1 : net.sim_time_sec
         Iapp = zeros(size(v));
         t0 = time - last_spike_time;
         t0_negu = t0 - round(delays);
-        p = net.fgi ./ sqrt(2 * pi * variance);
-        g = p .* exp(- (t0_negu .^ 2) ./ (2 * variance));
+        %p = net.fgi ./ sqrt(2 * pi * variance);
+        g = gauss(t0_negu, variance, p);
+        
         gaussian_values = w .* g;
         gaussian_values(isnan(gaussian_values)) = 0;
         Iapp = sum(gaussian_values, 1)';
+        debug = [debug; Iapp'];
 
         %% Update membrane voltages  
         v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
@@ -107,6 +111,35 @@ for sec = 1 : net.sim_time_sec
         fired = [fired_naturally; fired_pixels';]; % unique in case of SDVL supervision later
         spike_time_trace = [spike_time_trace; time*ones(length(fired),1), fired];
         last_spike_time(fired) = time; 
+        
+        % Update peak values for any that fired
+        if numel(fired) > 0
+            p(fired, :) = net.fgi ./ sqrt(2 * pi * variance(fired, :));
+            sample_starts = -delays(fired, :);
+            
+            % Calc integral 
+            full_integral = zeros(size(sample_starts));
+            for j = 1 : 40
+                step_integral = p(fired, :) .* exp(- ((sample_starts + j) .^ 2) ./ (2 * variance(fired, :)));
+                full_integral = full_integral + step_integral;
+            end
+            %sample_ends = sample_starts + 20;
+            %tmp = spfun(@ (x) gauss((1:40), x, p(fired, :)), variance(fired, :));
+            %tmp = p .* exp(- (delays:40 .^ 2) ./ (2 * variance));
+            %integral = sum(tmp, 2);
+            small_peaks = full_integral < net.fgi;
+            while any(small_peaks(:))
+                p(fired, :) = p(fired, :) + (0.005 .* small_peaks);
+                %p(small_peaks) = p(small_peaks) + 0.005;  % TODO make better
+                % Calc integral 
+                full_integral = zeros(size(sample_starts));
+                for j = 1 : 40
+                    step_integral = p(fired, :) .* exp(- ((sample_starts + j) .^ 2) ./ (2 * variance(fired, :)));
+                    full_integral = full_integral + step_integral;
+                end
+                small_peaks = full_integral < net.fgi;
+            end
+        end
         
         v(fired) = net.v_reset;
         v_thres(fired) = v_thres(fired) + net.thres_rise;
@@ -176,8 +209,8 @@ for sec = 1 : net.sim_time_sec
     
 out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
 out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
-if mod(sec, 50) == 0 && net.print_progress
-    %fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
+if mod(sec, 2) == 0 && net.print_progress
+    fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
     %clf;
     % TODO : Fix plotting
     %rasterspiketimes(spike_time_trace, 2000, 1);
