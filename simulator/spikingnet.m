@@ -56,7 +56,7 @@ out.timing_info.plotting_tocs = [];
 out.spike_time_trace = [];
 
 debug = [];
-disp('starting simulation');
+%disp('starting simulation');
 for sec = 1 : net.sim_time_sec
     out.timing_info.sim_sec_times(sec) = tic;
     spike_time_trace = [];
@@ -113,7 +113,8 @@ for sec = 1 : net.sim_time_sec
         last_spike_time(fired) = time; 
         
         % Update peak values for any that fired
-        if numel(fired) > 0
+        p = net.fgi ./ sqrt(2 * pi * variance);
+        if numel(fired) > 0 && net.fixed_integrals
             p(fired, :) = net.fgi ./ sqrt(2 * pi * variance(fired, :));
             sample_starts = -delays(fired, :);
             
