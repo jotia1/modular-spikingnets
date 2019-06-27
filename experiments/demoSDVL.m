@@ -40,8 +40,8 @@ net.w = zeros(net.N);
 net.w(1:3, 4:5) = 1;
 
 net.fgi = 66;
-net.nu = 0.03;
-net.nv = 0.01;
+net.nu = 0.075;
+net.nv = 0.1;
 net.a1 = 2;%-33.2;
 net.a2 = 1; %35.6;
 net.b1 = 5; %24.9;
@@ -60,11 +60,12 @@ net.taupost = 20;
 net.Apost = 0;%0.1;
 net.Apre = 0;%-0.1;
 
+net.fixed_integrals = false;
 net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
 
-net.sim_time_sec = 500;
+net.sim_time_sec = 300;
 net.seq = [0, 3, 7];
 net.seq_freq_ms = 500;
 net.supervised_seconds = 0;
