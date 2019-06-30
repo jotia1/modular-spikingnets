@@ -1,16 +1,17 @@
 %% cpsSDVLMNIST - Cluster Parameter Sweep with SDVL and MNIST data
+addpath(genpath('../'));
 
 %% Constants and outputs
-SIM_TIME = 3;
+SIM_TIME = 300;
 
 output_folder = newoutputfolder();
 
 %% Parameters to sweep
-r_fgi = [ 6.5, 7, 7.5, 8, 8.5 ];  
-r_a1 =  [ 1, 3, 5, 7, 9 ];
-r_a2 = [ 1, 3, 5, 7, 9 ];
-r_b1 = [ 1, 3, 5, 7, 9 ];
-r_b2 = [ 1, 3, 5, 7, 9 ];
+r_fgi = [ 6.5, 7.0, 7.5, 8.0 ];  
+r_a1 =  [ 1, 3, 5, 7 ];
+r_a2 = [ 1, 3, 5, 7 ];
+r_b1 = [ 7 ]    %, 1, 3, 5, 7 ];
+r_b2 = [ 1, 3, 5, 7 ];
 
 [orig_inp, orig_ts] = mnist2input(SIM_TIME);
 
@@ -31,7 +32,7 @@ for i_b2 = 1 : numel(r_b2)
                 
                 for i_fgi = 1 : numel(r_fgi)
                     fgi = r_fgi(i_fgi);
-                    
+                      
                     %% Build network
                     rng(1);
                     net = getcpsSDVLmnist(SIM_TIME);
@@ -64,7 +65,6 @@ for i_b2 = 1 : numel(r_b2)
         end
     end
 end
-net = getcpsSDVLmnist();
 
 
 
