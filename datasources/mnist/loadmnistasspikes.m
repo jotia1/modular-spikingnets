@@ -1,4 +1,4 @@
-function [ spike_digits ] = loadmnistasspikes()
+function [ spike_digits, digit_labels ] = loadmnistasspikes()
 %% Assumes mnist_train.mat exists
 load('mnist_train.mat', 'train_X', 'train_labels')
 
