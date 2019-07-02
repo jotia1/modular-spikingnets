@@ -57,6 +57,7 @@ net.Apre = 0;%-0.1;
 net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
+net.lateral_inhibition = [];
 
 net.sim_time_sec = 150;
 %net.seq = [0, 3, 7];

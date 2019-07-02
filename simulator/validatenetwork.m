@@ -1,15 +1,15 @@
-function [ res, missing_fields ] = validatenetwork( net )
+function [ isvalid, missing_fields ] = validatenetwork( net )
 %VALIDATENETWORK Summary of this function goes here
 %   Detailed explanation goes here
-res = true;
+isvalid = true;
 
-fields = {'supervising'};
+fields = {'supervising', 'lateral_inhibition'};
 missing_fields = {};
 
 for i = 1:length(fields)
     f = fields{i};
     if ~isfield(net, f)
-        res = false;
+        isvalid = false;
         missing_fields{end + 1} = f;
     end
 end
