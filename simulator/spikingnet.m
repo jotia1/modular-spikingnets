@@ -7,8 +7,8 @@ function [ out ] = spikingnet( net )
 
 out = struct();
 out.timing_info.init_time = tic;
-[res, missing] = validatenetwork(net);
-assert(res, missing);
+[isvalid, missing] = validatenetwork(net);
+assert(isvalid, 'Network missing field...');
 
 if net.rand_seed ~= -1
     rng(net.rand_seed); 
@@ -148,6 +148,9 @@ for sec = 1 : net.sim_time_sec
         
         
         % lateral inhibition
+        if numel(intersect(fired, net.lateral_inhibition)) > 0 
+            v(net.lateral_inhibition) = net.v_reset;         
+        end
         %if sum(fired > N_inp) > 0
         %    v(4:5) = net.v_reset;
         %end

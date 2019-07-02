@@ -83,9 +83,9 @@ net.N = sum(net.group_sizes);
 net.rand_seed = 1;
 
 net.delays = zeros(net.N);
-net.delays(1:28, 29:30) = 5;
+net.delays(1:28, 29:30) = 5 + randi(4, net.group_sizes) - 2;
 net.variance = zeros(net.N);
-net.variance(1:28, 29:30) = 2;
+net.variance(1:28, 29:30) = 2  + (rand(net.group_sizes) - 0.5) * 2;
 net.w = zeros(net.N);
 net.w(1:28, 29:30) = 1;
 
@@ -114,6 +114,7 @@ net.fixed_integrals = false;
 net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
+net.lateral_inhibition = [29, 30];
 
 net.sim_time_sec = sim_time_sec;
 net.seq = [];

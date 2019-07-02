@@ -70,6 +70,7 @@ net.seq = [0, 3, 7];
 net.seq_freq_ms = 500;
 net.supervised_seconds = 0;
 net.supervising = true;
+net.lateral_inhibition = [];
  
 %[net.inp, net.ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, net.sim_time_sec, net.supervised_seconds, 13);
 [p1inp, p1ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, 120, 60, 13);
