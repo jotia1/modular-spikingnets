@@ -3,19 +3,20 @@
 
 %
 SIM_TIME=60;
-fgivar = optimizableVariable('fgi', [7.0, 12.0], 'Type', 'real');
+fgivar = optimizableVariable('fgi', [7.0, 15.0], 'Type', 'real');
 nuvar = optimizableVariable('nu', [0.02, 0.05], 'Type', 'real');
 nvvar = optimizableVariable('nv', [0.02, 0.05], 'Type', 'real');
 a1var = optimizableVariable('a1', [1, 9], 'Type', 'integer');
 a2var = optimizableVariable('a2', [1, 9], 'Type', 'integer');
 b1var = optimizableVariable('b1', [1, 9], 'Type', 'integer');
 b2var = optimizableVariable('b2', [1, 9], 'Type', 'integer');
-[orig_inp, orig_ts] = mnist2input(SIM_TIME);
+[orig_inp, orig_ts, labels] = mnist2input(SIM_TIME);
 
-fun = @(x) optimisenetwork(x, orig_inp, orig_ts, SIM_TIME);
+fun = @(x) optimisenetwork(x, orig_inp, orig_ts, labels, SIM_TIME);
 results = bayesopt(fun, [fgivar, a1var, a2var, b1var, b2var, nuvar, nvvar],'Verbose',1,...
-    'AcquisitionFunctionName','expected-improvement-plus', 'UseParallel',true , ...
-    'NumSeedPoints', 50, 'MaxObjectiveEvaluations',30)
+    'AcquisitionFunctionName','expected-improvement-plus', ...
+    'NumSeedPoints', 40, 'MaxObjectiveEvaluations',30, 'UseParallel',true )
+%'UseParallel',true 
 
 
 % load ionosphere
@@ -30,7 +31,7 @@ results = bayesopt(fun, [fgivar, a1var, a2var, b1var, b2var, nuvar, nvvar],'Verb
 
 
 
-function [ acc ] = optimisenetwork( x, orig_inp, orig_ts, SIM_TIME )
+function [ acc ] = optimisenetwork( x, orig_inp, orig_ts, labels, SIM_TIME )
 
     rng(1);
     net = getcpsSDVLmnist(SIM_TIME);
@@ -45,7 +46,8 @@ function [ acc ] = optimisenetwork( x, orig_inp, orig_ts, SIM_TIME )
     
     out = spikingnet(net);
 
-    acc = -calcAccuracy(net, out);
+    acc = -percentagecorrect(net, out, labels);
+    %acc = -calcAccuracy(net, out);
     %acc = -totalspikes(net, out);
 
 end
