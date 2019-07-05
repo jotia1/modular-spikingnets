@@ -20,7 +20,7 @@ delays = sparse(net.delays);
 delayst = zeros(numel(net.delays_to_save), net.N, net.sim_time_sec * ms_per_sec);
 variance = sparse(net.variance);
 vart = zeros(numel(net.variance_to_save), net.N, net.sim_time_sec * ms_per_sec);
-%v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
+v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
 w = sparse(net.w);
 
 N = net.N;
@@ -195,8 +195,8 @@ for sec = 1 : net.sim_time_sec
         active_idx = mod(active_idx, net.delay_max) + 1;
     
         % Intrinsic plasticity threshold decay
-        v_thres = v_thres - (net.thres_rise * net.thres_freq / ms_per_sec);
-        %v_threst(:, time) = v_thres(:, net.v_thres_to_save)';
+        v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
+        v_threst(:, time) = v_thres(net.v_thres_to_save)';
         
         % Synaptic bounding - limit w to [0, w_max]
         w = max(0, min(net.w_max, w)); 
@@ -229,7 +229,7 @@ end
 out.vt = vt;
 out.vart = vart;
 out.delayst = delayst;
-%out.v_threst = v_threst;
+out.v_threst = v_threst;
 out.w = w;
 out.variance = variance;
 out.delays = delays;
