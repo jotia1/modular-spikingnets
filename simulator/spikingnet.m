@@ -16,7 +16,7 @@ end
 
 ms_per_sec = 1000;
 
-delays = sparse(net.delays);
+delays = net.delays;
 delayst = zeros(numel(net.delays_to_save), net.N, net.sim_time_sec * ms_per_sec);
 variance = net.variance;
 vart = zeros(numel(net.variance_to_save), net.N, net.sim_time_sec * ms_per_sec);
@@ -103,6 +103,7 @@ for sec = 1 : net.sim_time_sec
         %debug = [debug; Iapp'];
 
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
+        %debug = [debug; Iapp'];
 
         %% Update membrane voltages  
         v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
@@ -142,10 +143,11 @@ for sec = 1 : net.sim_time_sec
 %         upcoming_current;                   % [ N, current_steps ]
         
         
-        fired_delays = delays(fired, :);
+        fired_delays = round(delays(fired, :));
         sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
-        st = repmat(variance, 1, 1, current_steps);
-        s = st(fired, :, :);
+        sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
+        s = repmat(variance(fired, :), 1, 1, current_steps);
+        %s = st(fired, :, :);
         p = net.fgi ./ sqrt(2 * pi * s);
         %p = pt(fired, :, :);
         gauss = p .* exp(- (sample_idxs .^ 2) ./ (2 * s));
@@ -157,10 +159,11 @@ for sec = 1 : net.sim_time_sec
         weighted_gauss_samples(isnan(weighted_gauss_samples)) = 0;
         
         % Need to index carefully
+        upcoming_current(:, upcur_idx) = 0;
         upcur_idx = mod(upcur_idx, current_steps) + 1;
         idx_diff = current_steps - upcur_idx + 1;
-        upcoming_current(:, upcur_idx:end) = weighted_gauss_samples(:, 1 : idx_diff);
-        upcoming_current(:, 1 : upcur_idx - 1) = weighted_gauss_samples(:, idx_diff + 1 : end);
+        upcoming_current(:, upcur_idx:end) = upcoming_current(:, upcur_idx:end) + weighted_gauss_samples(:, 1 : idx_diff);
+        upcoming_current(:, 1 : upcur_idx - 1) = upcoming_current(:, 1 : upcur_idx - 1) + weighted_gauss_samples(:, idx_diff + 1 : end);
         
         
         % Update peak values for any that fired
