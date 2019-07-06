@@ -8,7 +8,7 @@ net.rand_seed = -1;
 
 out = spikingnet(net);
 plot3inp(out);
-calcAccuracy(net, out)
+calcAccuracy(net, out);
 
 figure;
 rasterspiketimes(out.spike_time_trace, 3, 2);
@@ -33,9 +33,9 @@ net.variance(1:3, 4:5) = 2;
 net.w = zeros(net.N);
 net.w(1:3, 4:5) = 1;
 
-net.fgi = 13;
-net.nu = 0.03;
-net.nv = 0.01;
+net.fgi = 75;
+net.nu = 0.06;
+net.nv = 0.02;
 net.a1 = 3;%-33.2;
 net.a2 = 2; %35.6;
 net.b1 = 5; %24.9;

@@ -1,6 +1,6 @@
 %% play with optimisation
-
-SIM_TIME=500;
+% 
+SIM_TIME=60;
 [orig_inp, orig_ts, labels] = mnist2input(SIM_TIME);
 
 rng(1);
@@ -9,10 +9,10 @@ net.rand_seed = -1;
 net.inp = orig_inp;
 net.ts = orig_ts;
 
-net.fgi = 11.136;
-net.a1 = 1; net.a2 = 9;
+net.fgi = 7;
+net.a1 = 3; net.a2 = 5;
 net.b1 = 2; net.b2 = 5;
-net.nu = 0.048692; net.nv = 0.04931;
+net.nu = 0.035; net.nv = 0.035;
 
 out = spikingnet(net);
 totalspikes(net, out);
@@ -32,22 +32,31 @@ subplot(2, 1, 2);
 rasterspiketimes(out.spike_time_trace, 28, 2);
 
 figure;
-subplot(2, 1, 1);
+subplot(2, 2, 1);
 plottrace(out.delayst, [1]);
-title('delay trace');
+title('delay trace 29');
 
-subplot(2, 1, 2);
+subplot(2, 2, 3);
 plottrace(out.vart, [1]);
-title('variance trace');
+title('variance trace 29');
+
+subplot(2, 2, 2);
+plottrace(out.delayst, [2]);
+title('delay trace 30');
+
+subplot(2, 2, 4);
+plottrace(out.vart, [2]);
+title('variance trace 30');
+
+figure;
+plotresponsetime(net, out, [29, 30])
 
 
 
-
-
-disp('break point');
-
+%disp('break point');
+% 
 % SIM_TIME=60;
-% fgivar = optimizableVariable('fgi', [7.0, 12.0], 'Type', 'real');
+% fgivar = optimizableVariable('fgi', [1.0, 12.0], 'Type', 'real');
 % nuvar = optimizableVariable('nu', [0.02, 0.05], 'Type', 'real');
 % nvvar = optimizableVariable('nv', [0.02, 0.05], 'Type', 'real');
 % a1var = optimizableVariable('a1', [1, 9], 'Type', 'integer');
@@ -134,8 +143,8 @@ net.Apost = 0;%0.1;
 net.Apre = 0;%-0.1;
 
 net.fixed_integrals = false;
-net.dynamic_threshold = true;
-net.thres_rise = 0.1; %[mV]
+net.dynamic_threshold = false;
+net.thres_rise = 1; %[mV]
 net.thres_freq = 1;  %[Hz]
 net.lateral_inhibition = [29, 30];
 
