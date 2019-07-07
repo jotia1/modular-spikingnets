@@ -39,6 +39,12 @@ upcur_idx = 1;
 v_thres = ones(size(v)) * net.v_thres;
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
 
+% Izhikevich params
+dt = 1;
+d = ones(N, 1) * 8;
+a = ones(N, 1) * 0.02;
+u = ones(N, 1) * -14;
+
 conns = w ~= 0;
 dApre = sparse(zeros(size(w)));
 dApost = sparse(zeros(size(w)));
@@ -88,13 +94,26 @@ for sec = 1 : net.sim_time_sec
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
         %debug = [debug; Iapp'];
 
-        %% Update membrane voltages  
-        v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
+        %% Update membrane voltages
+        if net.use_izhikevich
+            dv = (0.04 * v + 5) .* v + 140 - u;
+            v = v + (dv + Iapp) * dt;
+            du = a .* (0.2 * v - u);
+            u = u + dt * du;
+        else
+            v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
+        end
         vt(:, time) = v(net.voltages_to_save);
         
         %% Deal with neurons that just spiked
         fired_naturally = find(v >= v_thres);
         fired_pixels = inp_trimmed(ts_trimmed == time);
+        
+        if net.use_izhikevich
+            % TODO : consider, should be be applied too pixels (inputs) too?
+            vt(fired_naturally, time) = 35;
+            u(fired_naturally) = u(fired_naturally) + d(fired_naturally);
+        end
 
         if net.supervising
             %  if      supervised                and       it fired recently         or     is firing now.
@@ -178,11 +197,11 @@ for sec = 1 : net.sim_time_sec
         delays(conns) = max(1, min(net.delay_max, delays(conns)));
 
         % Update SDVL variance
-        dv = zeros(size(t0_negu));
-        dv(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
-        dv(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
+        dvar = zeros(size(t0_negu));
+        dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
+        dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
 
-        variance(:, fired) = variance(:, fired) + (dv .* conns(:, fired));
+        variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
         % Correct peaks now variance has changed
