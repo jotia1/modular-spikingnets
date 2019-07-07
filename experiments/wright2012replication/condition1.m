@@ -79,7 +79,7 @@ net.Apost = 0;
 net.Apre = 0;
 
 net.use_izhikevich = true;
-net.fixed_integrals = false;
+net.fixed_integrals = true;
 net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
