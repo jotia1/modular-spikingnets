@@ -117,6 +117,7 @@ for sec = 1 : net.sim_time_sec
         end
 
         if net.supervising
+            % TODO : Supervision needs to be made general.
             %  if      supervised                and       it fired recently         or     is firing now.
             if numel(find(fired_pixels == 4)) > 0 && (time - last_spike_time(4) < 30 || numel(find(fired_naturally == 4)) > 0)   % Only supervise if we havent seen a pixel 4 fire recently.
                 fired_pixels(find(fired_pixels == 4)) = [];
