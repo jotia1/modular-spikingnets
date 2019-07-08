@@ -44,6 +44,7 @@ dt = 1;
 d = ones(N, 1) * 8;
 a = ones(N, 1) * 0.02;
 u = ones(N, 1) * -14;
+do_rounding = true;
 
 conns = w ~= 0;
 dApre = sparse(zeros(size(w)));
@@ -65,7 +66,7 @@ out.timing_info.plotting_tics = uint64([]);
 out.timing_info.plotting_tocs = [];
 
 out.spike_time_trace = [];
-debug = [];
+debug = zeros(net.sim_time_sec * ms_per_sec, 4);
 
 if net.print_progress
     disp('Starting simulation');
@@ -84,7 +85,7 @@ for sec = 1 : net.sim_time_sec
         
         time = (sec - 1) * ms_per_sec + ms;
         
-        % Simulated annealingnot gonna lie, pretty excited you finally agr
+        % Simulated annealing
 %         if time < Tf * ms_per_sec
 %             m = (I0 - If) / (Tf * ms_per_sec);
 %             net.fgi = net.fgi - m;
@@ -92,7 +93,7 @@ for sec = 1 : net.sim_time_sec
         
         %% Calculate input
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
-        %debug = [debug; Iapp'];
+        debug(time, 4) = Iapp(4);
 
         %% Update membrane voltages
         if net.use_izhikevich
@@ -132,7 +133,11 @@ for sec = 1 : net.sim_time_sec
         last_spike_time(fired) = time; 
         
         %% Update upcoming current based on who spiked
-        fired_delays = round(delays(fired, :));
+        if do_rounding
+            fired_delays = round(delays(fired, :));
+        else
+            fired_delays = delays(fired, :);
+        end
         sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
         sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
         s = repmat(variance(fired, :), 1, 1, current_steps);
@@ -191,7 +196,7 @@ for sec = 1 : net.sim_time_sec
         % Update SDVL mean
         du = zeros(size(t0_negu));
         du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
-        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);% TODO: verify this line is correct, made an edit without checkign the maths.
+        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
 
         delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
         delays(conns) = max(1, min(net.delay_max, delays(conns)));
@@ -204,10 +209,17 @@ for sec = 1 : net.sim_time_sec
         variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
-        % Correct peaks now variance has changed
+        % Correct peaks now variances and means have changed
         if net.fixed_integrals && numel(fired) > 0
-            p(fired, :) = fixedintegrals(net, variance(fired, :), -delays(fired, :));
+            if do_rounding
+                fired_delays = round(delays(fired, :));
+            else
+                fired_dalays = delays(fired, :);
+            end
+            p(fired, :) = fixedintegrals(net, variance(fired, :), -fired_delays);
+            %debug = [debug; p(1:3, 4)'];
         end
+        debug(time, 1:3) = p(1:3, 4)';
     
         %% Intrinsic plasticity threshold decay
         v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
@@ -222,7 +234,6 @@ for sec = 1 : net.sim_time_sec
         % save. (as opposed to vart(:, 1, :) which might seem sensible).
         delayst(:, :, time) = delays(:, net.delays_to_save)';
         vart(:, :, time) = variance(:, net.variance_to_save)';
-        
     end  % of ms for loop
     
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
@@ -265,6 +276,8 @@ function [ p ] = fixedintegrals(net, vars, sample_starts)
         % Calc integral 
         full_integral = zeros(size(sample_starts));
         for j = 1 : 40
+            % Note: Converting exp( ... ) to a large constant matrix may be
+            % faster than looping. (esp. twice...)
             step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
             full_integral = full_integral + step_integral;
         end
@@ -272,6 +285,22 @@ function [ p ] = fixedintegrals(net, vars, sample_starts)
         do = any(small_peaks(:));
     end
     p(isinf(p)) = 0;
+    
+    % Didn't consider the case of peaks being too large to start with 
+    % i.e. from p = net.fgi ./ sqrt(2 * pi * vars); overestimating
+    big_peaks = 0;
+    do = true;
+    while do
+        p = p - (0.005 .* big_peaks);
+        % Calc integral 
+        full_integral = zeros(size(sample_starts));
+        for j = 1 : 40
+            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
+            full_integral = full_integral + step_integral;
+        end
+        big_peaks = full_integral > net.fgi;
+        do = any(big_peaks(:));
+    end
 
 end
 

@@ -69,7 +69,7 @@ net.variance_max = 10;
 net.neuron_tau = 20;
 net.delay_max = 15;
 
-net.v_rest = -65;
+net.v_rest = -70;
 net.v_reset = -65;
 net.v_thres = 35;
 net.w_max = 10;

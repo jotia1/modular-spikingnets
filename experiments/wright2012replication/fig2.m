@@ -2,6 +2,15 @@ function [ net, out ] = fig2()
 %% FIG2 - Replication of wright, wiles 2012 Figure 2
 %   See paper for additional details.
 %
+%   Produces a plot similar to figure 2 from the paper, some minor
+%   differences that might be worth further investigation. Two major points
+%   the bumps in the delay and variance plots, what causes these? and why
+%   does the output keep firing at times 121+ (when the pattern reverses).
+%   I suspect these are both coming from the same issue, that the fgi is
+%   too high and causes the output to fire despite a full reversal of the
+%   pattern (then as it shifts delays it looses this). With a lower fgi the
+%   plot is reproduced very faithfully. fgi = 12 is left as the default
+%   here (13 used in paper).
 
 
 rng(1); 
@@ -30,6 +39,15 @@ title('Neuron raster plot (compare with reponse time plot)');
 figure;
 plotresponsetime(net, out, [4]);
 title('Neuron 4s response time');
+
+figure;
+subplot(2, 1, 1);
+plot(out.debug(:, 1:3));
+title('peaks');
+
+subplot(2, 1, 2);
+plot(out.debug(:, 4));
+title('Iapp');
 
 end
 
@@ -61,7 +79,7 @@ net.variance_max = 10;
 net.neuron_tau = 20;
 net.delay_max = 15;
 
-net.v_rest = -65;
+net.v_rest = -70;
 net.v_reset = -65;
 net.v_thres = 35;
 net.w_max = 10;
