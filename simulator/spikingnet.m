@@ -30,12 +30,12 @@ vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
 last_spike_time = zeros(net.N, 1) * -Inf;
 p = zeros(net.N);
 if net.fixed_integrals
-    p = fixedintegrals(net, variance, -delays);
+    p = fixedintegrals(net, variance, -round(delays));
 end
 current_steps = 40;  % TODO : This needs to be based off step size and max delay etc. or we can just make it a hyperparam... 
 upcoming_current = zeros(N, current_steps);
 upcur_idx = 1;
-% Dynamic threshold stuff
+% Dynamic threshold parameters
 v_thres = ones(size(v)) * net.v_thres;
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
 
@@ -53,9 +53,12 @@ STDPdecaypre = exp(-1/net.taupre);
 STDPdecaypost = exp(-1/net.taupost);
 active_spikes = cell(net.delay_max, 1);  % To track when spikes arrive
 %active_idx = 1;
-%I0 = net.fgi;
-%If = I0 * 0.596;
-%Tf = 31.4;
+
+%Simulated annealing parameters
+I0 = net.fgi;
+If = net.If;
+Tf = net.Tf;
+anneal_gradient = (I0 - If) / (Tf * ms_per_sec);
 
 % output variables
 out.timing_info.init_toc = toc(out.timing_info.init_time);
@@ -86,10 +89,10 @@ for sec = 1 : net.sim_time_sec
         time = (sec - 1) * ms_per_sec + ms;
         
         % Simulated annealing
-%         if time < Tf * ms_per_sec
-%             m = (I0 - If) / (Tf * ms_per_sec);
-%             net.fgi = net.fgi - m;
-%         end
+        if mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
+            net.fgi = net.fgi - (anneal_gradient * net.seq_freq_ms);
+            p = fixedintegrals(net, variance, -round(delays));
+        end
         
         %% Calculate input
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
