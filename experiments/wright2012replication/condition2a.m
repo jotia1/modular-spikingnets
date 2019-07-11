@@ -107,6 +107,9 @@ net.seq_freq_ms = 200;
 net.supervised_seconds = net.sim_time_sec - 10;
 net.supervising = false;
 net.lateral_inhibition = [];
+net.use_simulated_annealing = false;
+net.If = 1;
+net.Tf = 1;
 
 % +1 to account for [0, 12], "No zeros please" - Matlab (2019)
 seqs = generatesequences(10, 2, 12) + 1; 

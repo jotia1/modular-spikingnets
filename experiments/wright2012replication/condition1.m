@@ -90,6 +90,9 @@ net.seq_freq_ms = 500;
 net.supervised_seconds = 15;
 net.supervising = true;
 net.lateral_inhibition = [];
+net.use_simulated_annealing = false;
+net.If = 1;
+net.Tf = 1;
 
 [ inp1, ts1 ] = createInput(net.seq, net.seq_freq_ms, 25, net.supervised_seconds, 13);
 [ inp2, ts2 ] = createInput(fliplr(net.seq), net.seq_freq_ms, 5, 0, 13);

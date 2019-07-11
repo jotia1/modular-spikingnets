@@ -7,7 +7,8 @@ fitnessfunction = @(x) optimisenetwork(x, orig_inp, orig_ts, labels, SIM_TIME );
 numvariables = 9; 
 
 opts = optimoptions(@ga,'PlotFcn',{@gaplotbestf,@gaplotstopping});
-opts.PopulationSize = 15;
+opts.PopulationSize = 75;
+opts = optimoptions(opts,'MaxGenerations',500,'MaxStallGenerations', 150,'UseParallel',true);
 
 lb = [1; 0.1; 0.1; 1; 1; 1; 1; 1; 1];
 ub = [10; 0.5; 0.5; 9; 9; 9; 9; 10; Inf];

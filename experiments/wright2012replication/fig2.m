@@ -94,6 +94,10 @@ net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
 
+net.use_simulated_annealing = false;
+net.If = 5;
+net.Tf = 10;
+
 net.sim_time_sec = 300;
 net.seq = [0, 3, 7];
 net.seq_freq_ms = 500;

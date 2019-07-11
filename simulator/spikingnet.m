@@ -89,7 +89,7 @@ for sec = 1 : net.sim_time_sec
         time = (sec - 1) * ms_per_sec + ms;
         
         % Simulated annealing
-        if mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
+        if net.use_simulated_annealing && mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
             net.fgi = net.fgi - (anneal_gradient * net.seq_freq_ms);
             p = fixedintegrals(net, variance, -round(delays));
         end
