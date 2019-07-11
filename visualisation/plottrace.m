@@ -1,4 +1,8 @@
-function [] = plottrace( trace, neurons )
+function [] = plottrace( trace, neurons, addlegend )
+
+if ~exist('addlegend', 'var')
+    addlegend = false;
+end
 
 leg = cell(1, numel(neurons));
 for n = 1 : numel(neurons)
@@ -13,6 +17,8 @@ end
 hold off
 %axis([-Inf Inf 5 14]);
 title('Output trace');
-legend(leg);
+if addlegend
+    legend(leg);
+end
 
 end
