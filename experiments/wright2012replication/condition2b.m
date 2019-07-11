@@ -107,7 +107,7 @@ net.supervised_seconds = 0;
 net.supervising = false;
 net.lateral_inhibition = [];
 
-net.use_sim_annealing = true;
+net.use_simulated_annealing = true;
 net.If = 3.226; %4.026;
 net.Tf = 31.4;
 
