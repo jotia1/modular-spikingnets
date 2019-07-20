@@ -7,10 +7,10 @@ SIM_TIME = 300;
 output_folder = newoutputfolder();
 
 %% Parameters to sweep
-r_fgi = [ 6.5, 7.0, 7.5, 8.0 ];  
+r_fgi = [ 8.2, 8.3, 8.4, 8.5 ];  
 r_a1 =  [ 1, 3, 5, 7 ];
 r_a2 = [ 1, 3, 5, 7 ];
-r_b1 = [ 7 ]    %, 1, 3, 5, 7 ];
+r_b1 = [ 1 ]    %, 1, 3, 5, 7 ];
 r_b2 = [ 1, 3, 5, 7 ];
 
 [orig_inp, orig_ts] = mnist2input(SIM_TIME);
@@ -33,6 +33,15 @@ for i_b2 = 1 : numel(r_b2)
                 for i_fgi = 1 : numel(r_fgi)
                     fgi = r_fgi(i_fgi);
                       
+                    %% Save results
+                    cvt_fgi = sprintf('%.1f', fgi);
+                    cvt_fgi(2) = '-';
+                    filename = sprintf('%s/%d_%d_%d_%d_%s', output_folder, a1, a2, b1, b2, cvt_fgi);
+                    filename_old = sprintf('%d_%d_%d_%d_%s', a1, a2, b1, b2, cvt_fgi);
+                    if exist(filename_old) == 2
+                        continue;
+                    end
+
                     %% Build network
                     rng(1);
                     net = getcpsSDVLmnist(SIM_TIME);
@@ -48,10 +57,6 @@ for i_b2 = 1 : numel(r_b2)
                     exp_tic = tic;
                     out = spikingnet(net);
                     
-                    %% Save results
-                    cvt_fgi = sprintf('%.1f', fgi);
-                    cvt_fgi(2) = '-';
-                    filename = sprintf('%s/%d_%d_%d_%d_%s', output_folder, a1, a2, b1, b2, cvt_fgi);
                     save(filename, 'net', 'out');
                     
                     %% log
