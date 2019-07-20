@@ -6,8 +6,8 @@ function [ patt_inp, patt_ts ] = generateuniformpattern( patt_length_ms, num_neu
 %   Example usage:
 %       [ patt_inp, patt_ts ] = generateuniformpattern( 100, 10 )
 
-    patt_inp = (1:num_neurons)';
-    patt_ts = sort(randi([1, patt_length_ms], num_neurons, 1));
+    patt_inp = (1:num_neurons);
+    patt_ts = sort(randi([1, patt_length_ms], 1, num_neurons));
     
 end
 
