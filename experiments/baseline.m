@@ -1,6 +1,9 @@
-function [ value ] = baseline( params )
+function [ net, out ] = baseline( params )
 %BASELINE Summary of this function goes here
 %   Detailed explanation goes here
+%
+%   Example usage:
+%       baseline([3, 1, 5, 5, 0.0236])
 
 net = getbaselinenet();
 
@@ -11,7 +14,7 @@ net.b2 = params(4);
 net.fgi = params(5);
 
 out = spikingnet(net);
-
+rasterspiketimes(out.spike_time_trace, 2000, 2)
 value = - calcAccuracy(net, out);
 
 end
@@ -54,24 +57,23 @@ net.taupost = 20;
 net.Apost = 0;%0.1;
 net.Apre = 0;%-0.1;
 
+net.use_izhikevich = false;
+net.fixed_integrals = true;
 net.dynamic_threshold = false;
 net.thres_rise = 10; %[mV]
 net.thres_freq = 1;  %[Hz]
 net.lateral_inhibition = [];
+net.use_simulated_annealing = false;
+net.If = 3.226; %4.026;
+net.Tf = 514.6;
 
-net.sim_time_sec = 150;
+net.sim_time_sec = 10;
 %net.seq = [0, 3, 7];
 %net.seq_freq_ms = 1000;
 %net.supervised_seconds = 0;
 net.supervising = false;
  
-%[net.inp, net.ts] = createTwoPatternInput(net.seq, fliplr(net.seq), net.seq_freq_ms, net.sim_time_sec, net.supervised_seconds, 13);
-[ net.inp, net.ts, patt_inp, patt_ts ] = repeatingcrudepattern( 500, 2000, 100, [], [], 20, net.sim_time_sec * 1000 );
-net.seq = [ patt_inp, patt_ts ];
-
-net.inp = net.inp';
-net.ts = net.ts';
-
+net.data_generator = @(pinp, pts) repeatingrefinedpattern(50, 10, 2000, pinp, pts);
 
 net.voltages_to_save = [2000:2001];
 net.variance_to_save = [2000:2001];
