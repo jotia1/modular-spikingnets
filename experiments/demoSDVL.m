@@ -85,5 +85,6 @@ net.ts = [p1ts, p2ts + (120 * 1000), p3ts + (150 * 1000), p4ts + (270 * 1000)];
 net.voltages_to_save = [1 : net.N];
 net.variance_to_save = [1 : net.N];
 net.delays_to_save = [1 : net.N];
+net.v_thres_to_save = [];
 
 end

@@ -41,7 +41,7 @@ while i < numel(l2_spike_times)
     pos = l2_spike_times(i);
     c_idx = mod(l2_spike_idxs(i) - N_inp - 1, size(ax.ColorOrder, 1)) + 1;
     colour = ax.ColorOrder(c_idx, :);
-    %plot( [pos pos] - offset, get( gca, 'Ylim' ), '--', 'Color', colour, 'LineWidth',2);
+    plot( [pos pos] - offset, get( gca, 'Ylim' ), '--', 'Color', colour, 'LineWidth',2);
 end
 
 % highlight pattern
@@ -54,7 +54,7 @@ if do_highlights
     for i = 1:numel(patt_locs)
         start_loc = patt_locs(i);
         xpos = start_loc + p_length + D_MAX;
-        %patch([start_loc xpos xpos start_loc ], [ 0 0 2001 2001  ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
+        patch([start_loc xpos xpos start_loc ], [ 0 0 2002 2002  ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
     end
     drawnow;
     hold off

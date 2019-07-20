@@ -16,13 +16,13 @@ function [ inp, ts ] = createInput(seq, freq, time_sec, sprvsn_time_sec, sprvsn_
 
 N = numel(seq);
 ms_per_sec = 1000;
-num_presentations = floor(time_sec * (ms_per_sec / freq));
+num_presentations = ceil(time_sec * (ms_per_sec / freq));
 inp = repmat(1:N, 1, num_presentations); 
 ts = reshape(repmat(((0:num_presentations -1 )' * freq)', N, 1), 1, num_presentations * N) + ...
         repmat(seq, 1, num_presentations) + 1; 
 
 % Set up supervision
-num_supervisions = floor(sprvsn_time_sec * (ms_per_sec / freq));
+num_supervisions = ceil(sprvsn_time_sec * (ms_per_sec / freq));
 inp = [inp, ones(1, num_supervisions) * length(seq) + 1];
 ts = [ts, (0:freq:((sprvsn_time_sec * ms_per_sec) - 1)) + sprvsn_spike_time_ms + 1];
 

@@ -16,11 +16,11 @@ end
 
 ms_per_sec = 1000;
 
-delays = sparse(net.delays);
+delays = net.delays;
 delayst = zeros(numel(net.delays_to_save), net.N, net.sim_time_sec * ms_per_sec);
-variance = sparse(net.variance);
+variance = net.variance;
 vart = zeros(numel(net.variance_to_save), net.N, net.sim_time_sec * ms_per_sec);
-%v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
+v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
 w = sparse(net.w);
 
 N = net.N;
@@ -29,10 +29,22 @@ v = ones(N, 1) * net.v_rest;
 vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
 last_spike_time = zeros(net.N, 1) * -Inf;
 p = zeros(net.N);
-gauss = @(x, s, p) p .* exp(- (x .^ 2) ./ (2 * s));
-% Dynamic threshold stuff
+if net.fixed_integrals
+    p = fixedintegrals(net, variance, -round(delays));
+end
+current_steps = 40;  % TODO : This needs to be based off step size and max delay etc. or we can just make it a hyperparam... 
+upcoming_current = zeros(N, current_steps);
+upcur_idx = 1;
+% Dynamic threshold parameters
 v_thres = ones(size(v)) * net.v_thres;
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
+
+% Izhikevich params
+dt = 1;
+d = ones(N, 1) * 8;
+a = ones(N, 1) * 0.02;
+u = ones(N, 1) * -14;
+do_rounding = true;
 
 conns = w ~= 0;
 dApre = sparse(zeros(size(w)));
@@ -40,10 +52,13 @@ dApost = sparse(zeros(size(w)));
 STDPdecaypre = exp(-1/net.taupre);
 STDPdecaypost = exp(-1/net.taupost);
 active_spikes = cell(net.delay_max, 1);  % To track when spikes arrive
-active_idx = 1;
-%I0 = net.fgi;
-%If = I0 * 0.596;
-%Tf = 31.4;
+%active_idx = 1;
+
+%Simulated annealing parameters
+I0 = net.fgi;
+If = net.If;
+Tf = net.Tf;
+anneal_gradient = (I0 - If) / (Tf * ms_per_sec);
 
 % output variables
 out.timing_info.init_toc = toc(out.timing_info.init_time);
@@ -52,51 +67,74 @@ out.timing_info.sim_sec_tocs = zeros(net.sim_time_sec, 1);
 out.timing_info.full_sec_tocs = zeros(net.sim_time_sec, 1);
 out.timing_info.plotting_tics = uint64([]);
 out.timing_info.plotting_tocs = [];
+out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 
 out.spike_time_trace = [];
+debug = zeros(net.sim_time_sec * ms_per_sec, 4);
 
-debug = [];
-%disp('starting simulation');
+if net.print_progress
+    disp('Starting simulation');
+end
+
 for sec = 1 : net.sim_time_sec
     out.timing_info.sim_sec_times(sec) = tic;
     spike_time_trace = [];
     
-    % Trim data into seconds to speed searching later
-    idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
-    inp_trimmed = net.inp(idxs);
-    ts_trimmed = net.ts(idxs);
+    if isa(net.data_generator,'function_handle')
+        [inp_trimmed, ts_trimmed] = net.data_generator();
+        ts_trimmed = ts_trimmed + (sec -1) * 1000;
+    else
+        % Trim data into seconds to speed searching later
+        idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
+        inp_trimmed = net.inp(idxs);
+        ts_trimmed = net.ts(idxs);
+    end
     
     for ms = 1 : ms_per_sec
+        
+        ms_tic = tic;
         
         time = (sec - 1) * ms_per_sec + ms;
         
         % Simulated annealing
-%         if time < Tf * ms_per_sec
-%             m = (I0 - If) / (Tf * ms_per_sec);
-%             net.fgi = net.fgi - m;
-%         end
+        if net.use_simulated_annealing && mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
+            net.fgi = net.fgi - (anneal_gradient * net.seq_freq_ms);
+            p = fixedintegrals(net, variance, -round(delays));
+        end
         
         %% Calculate input
-        Iapp = zeros(size(v));
-        t0 = time - last_spike_time;
-        t0_negu = t0 - round(delays);
-        %p = net.fgi ./ sqrt(2 * pi * variance);
-        g = gauss(t0_negu, variance, p);
+        Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
+        debug(time, 4) = Iapp(4);
         
-        gaussian_values = w .* g;
-        gaussian_values(isnan(gaussian_values)) = 0;
-        Iapp = sum(gaussian_values, 1)';
-        debug = [debug; Iapp'];
-
-        %% Update membrane voltages  
-        v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(1, time) = toc(ms_tic);
+        
+        %% Update membrane voltages
+        if net.use_izhikevich
+            dv = (0.04 * v + 5) .* v + 140 - u;
+            v = v + (dv + Iapp) * dt;
+            du = a .* (0.2 * v - u);
+            u = u + dt * du;
+        else
+            v = v + ((net.v_rest - v) / net.neuron_tau) + Iapp;
+        end
         vt(:, time) = v(net.voltages_to_save);
+        
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(2, time) = toc(ms_tic);
         
         %% Deal with neurons that just spiked
         fired_naturally = find(v >= v_thres);
         fired_pixels = inp_trimmed(ts_trimmed == time);
+        
+        if net.use_izhikevich
+            % TODO : consider, should be be applied too pixels (inputs) too?
+            vt(fired_naturally, time) = 35;
+            u(fired_naturally) = u(fired_naturally) + d(fired_naturally);
+        end
 
         if net.supervising
+            % TODO : Supervision needs to be made general.
             %  if      supervised                and       it fired recently         or     is firing now.
             if numel(find(fired_pixels == 4)) > 0 && (time - last_spike_time(4) < 30 || numel(find(fired_naturally == 4)) > 0)   % Only supervise if we havent seen a pixel 4 fire recently.
                 fired_pixels(find(fired_pixels == 4)) = [];
@@ -112,48 +150,52 @@ for sec = 1 : net.sim_time_sec
         spike_time_trace = [spike_time_trace; time*ones(length(fired),1), fired];
         last_spike_time(fired) = time; 
         
-        % Update peak values for any that fired
-        p = net.fgi ./ sqrt(2 * pi * variance);
-        if numel(fired) > 0 && net.fixed_integrals
-            p(fired, :) = net.fgi ./ sqrt(2 * pi * variance(fired, :));
-            sample_starts = -delays(fired, :);
-            
-            % Calc integral 
-            full_integral = zeros(size(sample_starts));
-            for j = 1 : 40
-                step_integral = p(fired, :) .* exp(- ((sample_starts + j) .^ 2) ./ (2 * variance(fired, :)));
-                full_integral = full_integral + step_integral;
-            end
-            %sample_ends = sample_starts + 20;
-            %tmp = spfun(@ (x) gauss((1:40), x, p(fired, :)), variance(fired, :));
-            %tmp = p .* exp(- (delays:40 .^ 2) ./ (2 * variance));
-            %integral = sum(tmp, 2);
-            small_peaks = full_integral < net.fgi;
-            while any(small_peaks(:))
-                p(fired, :) = p(fired, :) + (0.005 .* small_peaks);
-                %p(small_peaks) = p(small_peaks) + 0.005;  % TODO make better
-                % Calc integral 
-                full_integral = zeros(size(sample_starts));
-                for j = 1 : 40
-                    step_integral = p(fired, :) .* exp(- ((sample_starts + j) .^ 2) ./ (2 * variance(fired, :)));
-                    full_integral = full_integral + step_integral;
-                end
-                small_peaks = full_integral < net.fgi;
-            end
-        end
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(3, time) = toc(ms_tic);
         
+        %% Update upcoming current based on who spiked
+        if do_rounding
+            fired_delays = round(delays(fired, :));
+        else
+            fired_delays = delays(fired, :);
+        end
+        sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
+        sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
+        s = repmat(variance(fired, :), 1, 1, current_steps);
+        
+        %% TIMER 16 %
+        out.timing_info.profiling_tocs(4, time) = toc(ms_tic);
+        
+        if net.fixed_integrals
+            p_fired = repmat(p(fired, :), 1, 1, current_steps);
+        else
+            p_fired = net.fgi ./ sqrt(2 * pi * s);
+        end
+
+        gauss = p_fired .* exp(- (sample_idxs .^ 2) ./ (2 * s));
+        gsum = sum(gauss, 1);
+        g = squeeze(gsum);
+        
+        weighted_gauss_samples = g;             % TODO: HACK - need to consider the case where w ~= 1
+        weighted_gauss_samples(isnan(weighted_gauss_samples)) = 0;
+        
+        upcoming_current(:, upcur_idx) = 0;
+        upcur_idx = mod(upcur_idx, current_steps) + 1;
+        idx_diff = current_steps - upcur_idx + 1;
+        upcoming_current(:, upcur_idx:end) = upcoming_current(:, upcur_idx:end) + weighted_gauss_samples(:, 1 : idx_diff);
+        upcoming_current(:, 1 : upcur_idx - 1) = upcoming_current(:, 1 : upcur_idx - 1) + weighted_gauss_samples(:, idx_diff + 1 : end);
+   
         v(fired) = net.v_reset;
         v_thres(fired) = v_thres(fired) + net.thres_rise;
         %debug = [debug; v_thres'];
         
+        %% TIMER  19 %
+        out.timing_info.profiling_tocs(5, time) = toc(ms_tic);
         
-        % lateral inhibition
+        %% lateral inhibition
         if numel(intersect(fired, net.lateral_inhibition)) > 0 
             v(net.lateral_inhibition) = net.v_reset;         
         end
-        %if sum(fired > N_inp) > 0
-        %    v(4:5) = net.v_reset;
-        %end
         
         %% STDP
         % Any pre-synaptics weights should be increased
@@ -162,6 +204,14 @@ for sec = 1 : net.sim_time_sec
         w(fired, :) = w(fired, :) + (dApre(fired, :) .* conns(fired, :));
         dApost(fired, :) = dApost(fired, :) + net.Apost;
         dApre(:, fired) = dApre(:, fired) + net.Apre;
+        
+        % STDP decay
+        dApre = dApre * STDPdecaypre;
+        dApost = dApost * STDPdecaypost;
+        %active_idx = mod(active_idx, net.delay_max) + 1;
+        
+        %% TIMER 1%
+        out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
         %% SDVL
         % TODO - consider if this should be done at the start of the ms or
@@ -176,60 +226,80 @@ for sec = 1 : net.sim_time_sec
         % Update SDVL mean
         du = zeros(size(t0_negu));
         du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
-        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);% TODO: verify this line is correct, made an edit without checkign the maths.
+        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
 
         delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
         delays(conns) = max(1, min(net.delay_max, delays(conns)));
 
         % Update SDVL variance
-        dv = zeros(size(t0_negu));
-        dv(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
-        dv(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
+        dvar = zeros(size(t0_negu));
+        dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
+        dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
 
-        variance(:, fired) = variance(:, fired) + (dv .* conns(:, fired));
+        variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
-
-        % STDP decay
-        dApre = dApre * STDPdecaypre;
-        dApost = dApost * STDPdecaypost;
-        active_idx = mod(active_idx, net.delay_max) + 1;
-    
-        % Intrinsic plasticity threshold decay
-        v_thres = v_thres - (net.thres_rise * net.thres_freq / ms_per_sec);
-        %v_threst(:, time) = v_thres(:, net.v_thres_to_save)';
         
-        % Synaptic bounding - limit w to [0, w_max]
+        %% TIMER 6 %
+        out.timing_info.profiling_tocs(7, time) = toc(ms_tic);
+        
+        % Correct peaks now variances and means have changed
+        if net.fixed_integrals && numel(fired) > 0
+            if do_rounding
+                fired_delays = round(delays(fired, :));
+            else
+                fired_dalays = delays(fired, :);
+            end
+            p(fired, :) = fixedintegrals(net, variance(fired, :), -fired_delays);
+            %debug = [debug; p(1:3, 4)'];
+        end
+        debug(time, 1:3) = p(1:3, 4)';
+        
+        %% TIMER 56 %
+        out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
+    
+        %% Intrinsic plasticity threshold decay
+        v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
+        v_threst(:, time) = v_thres(net.v_thres_to_save)';
+        
+        %% Synaptic bounding - limit w to [0, w_max]
         w = max(0, min(net.w_max, w)); 
         
-        % Save variables
+        %% Save variables
         % NOTE: variances saved have rotated to what is usual
         % that is, vart(1, :, :) is the variances of the first variance to
         % save. (as opposed to vart(:, 1, :) which might seem sensible).
         delayst(:, :, time) = delays(:, net.delays_to_save)';
         vart(:, :, time) = variance(:, net.variance_to_save)';
         
+        %% TIMER
+        out.timing_info.profiling_tocs(9, time) = toc(ms_tic);
+        
+                %% TIMER
+        out.timing_info.profiling_tocs(10, time) = toc(ms_tic);
+
+        
     end  % of ms for loop
-
     
-out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
-out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
-if mod(sec, 2) == 0 && net.print_progress
-    fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
-    %clf;
-    % TODO : Fix plotting
-    %rasterspiketimes(spike_time_trace, 2000, 1);
-    %drawnow;
-    var = 1;
-end
-
+    out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
+    out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
+    if mod(sec, 2) == 0 && net.print_progress
+        fprintf('Sim sec: %d, Real sec: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.init_time)/sec);
+        %clf;
+        % TODO : Fix plotting
+        %rasterspiketimes(spike_time_trace, 2000, 1);
+        %drawnow;
+        var = 1;
+    end
 end    % of seconds for loop
+
 if net.print_progress
     fprintf('Real seconds per simulated: %.3f \n', toc(out.timing_info.init_time) / sec);
 end
+
 out.vt = vt;
 out.vart = vart;
 out.delayst = delayst;
-%out.v_threst = v_threst;
+out.v_threst = v_threst;
 out.w = w;
 out.variance = variance;
 out.delays = delays;
@@ -239,7 +309,44 @@ end
 
 
 
+function [ p ] = fixedintegrals(net, vars, sample_starts)
 
+    %% Fixed Integrals: Update peak values for any that fired
+    p = net.fgi ./ sqrt(2 * pi * vars);  
+    do = true;
+    small_peaks = 0;
+    while do
+        p = p + (0.005 .* small_peaks);
+        % Calc integral 
+        full_integral = zeros(size(sample_starts));
+        for j = 1 : 40
+            % Note: Converting exp( ... ) to a large constant matrix may be
+            % faster than looping. (esp. twice...)
+            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
+            full_integral = full_integral + step_integral;
+        end
+        small_peaks = full_integral < net.fgi;
+        do = any(small_peaks(:));
+    end
+    p(isinf(p)) = 0;
+    
+    % Didn't consider the case of peaks being too large to start with 
+    % i.e. from p = net.fgi ./ sqrt(2 * pi * vars); overestimating
+    big_peaks = 0;
+    do = true;
+    while do
+        p = p - (0.005 .* big_peaks);
+        % Calc integral 
+        full_integral = zeros(size(sample_starts));
+        for j = 1 : 40
+            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
+            full_integral = full_integral + step_integral;
+        end
+        big_peaks = full_integral > net.fgi;
+        do = any(big_peaks(:));
+    end
+
+end
 
 
 
