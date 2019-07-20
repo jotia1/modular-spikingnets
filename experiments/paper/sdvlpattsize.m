@@ -5,9 +5,6 @@ function [ net, out ] = sdvlpattsize( params )
 %   Example usage:
 %       [ net, out ] = sdvlpattsize( [3, 1, 5, 5, 0.0236] )
 
-% Needed for running as main on cluster
-addpath(genpath('../../'));
-
 net = defaultpapernetwork();
 
 net.a1 = params(1);
@@ -22,17 +19,28 @@ Tp = 50;
 Df = 10;
 
 output_folder = newoutputfolder();
+values = zeros(20, 5);
+count = 1;
 
 for Np = 50: 50 : 1000
-    [pinp, pts] = generateuniformpattern(Tp, Np);
-    net.data_generator = @() repeatingrefinedpattern(Tp, Df, net.group_sizes(1), pinp, pts);
+    for repeat = 1 : 5
+        [pinp, pts] = generateuniformpattern(Tp, Np);
+        net.data_generator = @() repeatingrefinedpattern(Tp, Df, net.group_sizes(1), pinp, pts);
     
-    out = spikingnet(net);
+        out = spikingnet(net);
+
+        value = detectionrate(net, out);
+        
+        values(count, repeat) = value;
     
-    filename = sprintf('%s/exp1_%d', output_folder, Np);
-    save(filename, 'net', 'out');
-    
+        filename = sprintf('%s/exp1_%d', output_folder, Tp);
+        save(filename, 'net', 'out');
+    end
+    count = count + 1;
 end
+
+filename = sprintf('%s/results', output_folder);
+save(filename, 'values');
 
 
 end
