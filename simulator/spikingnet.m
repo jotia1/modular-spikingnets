@@ -67,6 +67,7 @@ out.timing_info.sim_sec_tocs = zeros(net.sim_time_sec, 1);
 out.timing_info.full_sec_tocs = zeros(net.sim_time_sec, 1);
 out.timing_info.plotting_tics = uint64([]);
 out.timing_info.plotting_tocs = [];
+out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 
 out.spike_time_trace = [];
 debug = zeros(net.sim_time_sec * ms_per_sec, 4);
@@ -79,12 +80,19 @@ for sec = 1 : net.sim_time_sec
     out.timing_info.sim_sec_times(sec) = tic;
     spike_time_trace = [];
     
-    % Trim data into seconds to speed searching later
-    idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
-    inp_trimmed = net.inp(idxs);
-    ts_trimmed = net.ts(idxs);
+    if isa(net.data_generator,'function_handle')
+        [inp_trimmed, ts_trimmed] = net.data_generator();
+        ts_trimmed = ts_trimmed + (sec -1) * 1000;
+    else
+        % Trim data into seconds to speed searching later
+        idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
+        inp_trimmed = net.inp(idxs);
+        ts_trimmed = net.ts(idxs);
+    end
     
     for ms = 1 : ms_per_sec
+        
+        ms_tic = tic;
         
         time = (sec - 1) * ms_per_sec + ms;
         
@@ -97,7 +105,10 @@ for sec = 1 : net.sim_time_sec
         %% Calculate input
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
         debug(time, 4) = Iapp(4);
-
+        
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(1, time) = toc(ms_tic);
+        
         %% Update membrane voltages
         if net.use_izhikevich
             dv = (0.04 * v + 5) .* v + 140 - u;
@@ -105,9 +116,12 @@ for sec = 1 : net.sim_time_sec
             du = a .* (0.2 * v - u);
             u = u + dt * du;
         else
-            v = v + (net.v_rest + Iapp - v) / net.neuron_tau;
+            v = v + ((net.v_rest - v) / net.neuron_tau) + Iapp;
         end
         vt(:, time) = v(net.voltages_to_save);
+        
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(2, time) = toc(ms_tic);
         
         %% Deal with neurons that just spiked
         fired_naturally = find(v >= v_thres);
@@ -136,6 +150,9 @@ for sec = 1 : net.sim_time_sec
         spike_time_trace = [spike_time_trace; time*ones(length(fired),1), fired];
         last_spike_time(fired) = time; 
         
+        %% TIMER < 1
+        out.timing_info.profiling_tocs(3, time) = toc(ms_tic);
+        
         %% Update upcoming current based on who spiked
         if do_rounding
             fired_delays = round(delays(fired, :));
@@ -145,6 +162,9 @@ for sec = 1 : net.sim_time_sec
         sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
         sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
         s = repmat(variance(fired, :), 1, 1, current_steps);
+        
+        %% TIMER 16 %
+        out.timing_info.profiling_tocs(4, time) = toc(ms_tic);
         
         if net.fixed_integrals
             p_fired = repmat(p(fired, :), 1, 1, current_steps);
@@ -169,6 +189,9 @@ for sec = 1 : net.sim_time_sec
         v_thres(fired) = v_thres(fired) + net.thres_rise;
         %debug = [debug; v_thres'];
         
+        %% TIMER  19 %
+        out.timing_info.profiling_tocs(5, time) = toc(ms_tic);
+        
         %% lateral inhibition
         if numel(intersect(fired, net.lateral_inhibition)) > 0 
             v(net.lateral_inhibition) = net.v_reset;         
@@ -186,6 +209,9 @@ for sec = 1 : net.sim_time_sec
         dApre = dApre * STDPdecaypre;
         dApost = dApost * STDPdecaypost;
         %active_idx = mod(active_idx, net.delay_max) + 1;
+        
+        %% TIMER 1%
+        out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
         %% SDVL
         % TODO - consider if this should be done at the start of the ms or
@@ -213,6 +239,9 @@ for sec = 1 : net.sim_time_sec
         variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
+        %% TIMER 6 %
+        out.timing_info.profiling_tocs(7, time) = toc(ms_tic);
+        
         % Correct peaks now variances and means have changed
         if net.fixed_integrals && numel(fired) > 0
             if do_rounding
@@ -224,6 +253,9 @@ for sec = 1 : net.sim_time_sec
             %debug = [debug; p(1:3, 4)'];
         end
         debug(time, 1:3) = p(1:3, 4)';
+        
+        %% TIMER 56 %
+        out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
     
         %% Intrinsic plasticity threshold decay
         v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
@@ -238,12 +270,20 @@ for sec = 1 : net.sim_time_sec
         % save. (as opposed to vart(:, 1, :) which might seem sensible).
         delayst(:, :, time) = delays(:, net.delays_to_save)';
         vart(:, :, time) = variance(:, net.variance_to_save)';
+        
+        %% TIMER
+        out.timing_info.profiling_tocs(9, time) = toc(ms_tic);
+        
+                %% TIMER
+        out.timing_info.profiling_tocs(10, time) = toc(ms_tic);
+
+        
     end  % of ms for loop
     
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
     out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
     if mod(sec, 2) == 0 && net.print_progress
-        fprintf('Sim sec: %d, Real sec: %.3f \n', sec, toc(out.timing_info.init_time));
+        fprintf('Sim sec: %d, Real sec: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.init_time)/sec);
         %clf;
         % TODO : Fix plotting
         %rasterspiketimes(spike_time_trace, 2000, 1);
