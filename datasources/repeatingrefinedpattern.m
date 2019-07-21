@@ -37,7 +37,7 @@ midinp = randi([1, Np], 1, adj_spikes);
 midts = [randi([Tp, 500], 1, adj_spikes / 2), randi([Tp, 500], 1, adj_spikes / 2) + 500]; 
 
 % Make top of pattern
-exp_spikes = Df * ceil(Tp / 1000) * N;
+exp_spikes = ceil(Df * Tp / 1000 * N);
 adj_spikes = exp_spikes - Np;
 topinp = randi([Np + 1, N], 1, adj_spikes * 2);
 topts = [randi([1, Tp], 1, adj_spikes), randi([1, Tp], 1, adj_spikes) + 500]; 
