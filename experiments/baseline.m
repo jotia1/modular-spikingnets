@@ -72,8 +72,9 @@ net.sim_time_sec = 10;
 %net.seq_freq_ms = 1000;
 %net.supervised_seconds = 0;
 net.supervising = false;
- 
-net.data_generator = @(pinp, pts) repeatingrefinedpattern(50, 10, 2000, pinp, pts);
+
+[pinp, pts] = generateuniformpattern(50, 1000);
+net.data_generator = @() repeatingrefinedpattern(50, 20, 2000, pinp, pts);
 
 net.voltages_to_save = [2000:2001];
 net.variance_to_save = [2000:2001];
