@@ -19,28 +19,40 @@ Tp = 50;
 Df = 10;
 
 output_folder = newoutputfolder();
-values = zeros(20, 5);
+values = zeros(20, 10);
 count = 1;
 
-for Np = 50: 50 : 1000
-    for repeat = 1 : 5
+rng(56);
+
+for repeat = 1 : 10
+    count = 1;
+    for Np = 50: 50 : 1000
         [pinp, pts] = generateuniformpattern(Tp, Np);
         net.data_generator = @() repeatingrefinedpattern(Tp, Df, net.group_sizes(1), pinp, pts);
     
         out = spikingnet(net);
 
-        value = detectionrate(net, out);
+        value = detectionrate(net, out)
         
         values(count, repeat) = value;
-    
-        filename = sprintf('%s/exp1_%d', output_folder, Tp);
-        save(filename, 'net', 'out');
+        try 
+            filename = sprintf('%s/exp1_%d_%d', output_folder, Np, repeat);
+            save(filename, 'net', 'out');
+        catch exception
+            fprintf('Failed to write: %s', filename);
+        end
+
+        try
+            filename = sprintf('%s/results_%d_%d', output_folder, Np, repeat);
+            save(filename, 'values');
+        catch exception
+            fprintf('Failed to write results: %s', filename);
+        end
+        count = count + 1;
     end
-    count = count + 1;
 end
 
-filename = sprintf('%s/results', output_folder);
+filename = sprintf('%s/results_%d', output_folder, Np);
 save(filename, 'values');
-
 
 end
