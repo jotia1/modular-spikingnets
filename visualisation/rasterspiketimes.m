@@ -1,4 +1,4 @@
-function [] = rasterspiketimes( spike_times_trace, N_inp, N_hid )
+function [] = rasterspiketimes( spike_times_trace, N_inp, N_hid, vertlines )
 %% RASTERSPIKETIMES - Draw a rater plot of the spike times
 %   Given a (s, 2) sized matrix with s spikes, draw a raster plot with the
 %   input spikes in black and the output spikes in red. The supplied data
@@ -19,6 +19,10 @@ if ~exist('N_inp', 'var') || ~exist('N_hid', 'var')
     N_hid = 0;
 end
 
+if ~exist('vertlines', 'var')
+    vertlines = false;
+end
+
 thousands = round(spike_times_trace(1, 1) / 1000);
 offset = thousands * 1000; 
 filter = find(spike_times_trace(:,2) <= N_inp + N_hid & spike_times_trace(:,2) > N_inp & spike_times_trace(:,1) > offset);
@@ -36,29 +40,31 @@ ax = gca;
 i = 0;
 
 %axis([0, 30, -30 N_v + 50]);
-while i < numel(l2_spike_times)
-    i = i + 1;
-    pos = l2_spike_times(i);
-    c_idx = mod(l2_spike_idxs(i) - N_inp - 1, size(ax.ColorOrder, 1)) + 1;
-    colour = ax.ColorOrder(c_idx, :);
-    plot( [pos pos] - offset, get( gca, 'Ylim' ), '--', 'Color', colour, 'LineWidth',2);
+if vertlines   % Can be slow if many output spikes
+    while i < numel(l2_spike_times)
+        i = i + 1;
+        pos = l2_spike_times(i);
+        c_idx = mod(l2_spike_idxs(i) - N_inp - 1, size(ax.ColorOrder, 1)) + 1;
+        colour = ax.ColorOrder(c_idx, :);
+        plot( [pos pos] - offset, get( gca, 'Ylim' ), '--', 'Color', colour, 'LineWidth',2);
+    end
 end
 
-% highlight pattern
-do_highlights = true;
-if do_highlights
-    D_MAX = 20;
-    patt_locs = 0:500:max(spike_times_trace(:, 1));
-    p_length = 20;
-    hold on
-    for i = 1:numel(patt_locs)
-        start_loc = patt_locs(i);
-        xpos = start_loc + p_length + D_MAX;
-        patch([start_loc xpos xpos start_loc ], [ 0 0 2002 2002  ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
-    end
-    drawnow;
-    hold off
-end
+% % highlight pattern
+% do_highlights = true;
+% if do_highlights
+%     D_MAX = 20;
+%     patt_locs = 0:500:max(spike_times_trace(:, 1));
+%     p_length = 20;
+%     hold on
+%     for i = 1:numel(patt_locs)
+%         start_loc = patt_locs(i);
+%         xpos = start_loc + p_length + D_MAX;
+%         patch([start_loc xpos xpos start_loc ], [ 0 0 2002 2002  ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
+%     end
+%     drawnow;
+%     hold off
+% end
 
 %axis([0, max(spike_times_trace(:, 1)), 0, 2102]);
 title(sprintf('Time offset by %d thousands', thousands));
