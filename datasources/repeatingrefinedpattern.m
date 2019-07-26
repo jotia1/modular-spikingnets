@@ -1,4 +1,4 @@
-function [ inp, ts, patt_inp, patt_ts ] = repeatingrefinedpattern(Tp, Df, N, patt_inp, patt_ts)
+function [ inp, ts, patt_inp, patt_ts, offsets ] = repeatingrefinedpattern(Tp, Df, N, Np, patt_inp, patt_ts)
 %% REPEATINGREFINEDPATTERN - Create 1 second of normalised network input
 %   Normalised meaning that creating histagrams (see and of file) will now
 %   show any increase in activity during the pattern or any other time. The
@@ -8,27 +8,31 @@ function [ inp, ts, patt_inp, patt_ts ] = repeatingrefinedpattern(Tp, Df, N, pat
 %   Parameters:
 %       Tp - Time of pattern (pattern length) [ms]
 %       Df - Default frequency of each neuron [Hz]
-%       N - Number of neurons in pattern
+%       N - Number of neurons
+%       Np - Number of neurons in pattern
 %       patt_inp/ts - The neurons in the pattern, related to patt_ts
 %
 % Example usage 
 %   [ inp, ts ] = repeatingrefinedpattern(50, 10, 2000, patt_inp, patt_ts)
 
 
-% Pattern frequence (Pf) is hardcoded for now
+% Pattern frequence (Pf) is hardcoded for now - see poisspattfreq
 % TODO make this more general in the future.
 Pf = 2;
+offsets = [0, 500]; 
 
 %% make pattern
 if ~exist('patt_inp', 'var') || ~exist('patt_ts', 'var') || ...
     isempty(patt_inp) || isempty(patt_ts)
-    Np = 100;
+    if ~ exist('Np', 'var') 
+        Np = 100;
+    end
     patt_inp = 1:Np;
     patt_ts = sort(randi([1, Tp], 1, Np));
-else
+end
+if ~exist('Np', 'var')  % Pattern was provided but Np wasn't
     Np = numel(patt_inp);
 end
-
 
 % Make rest that isnt pattern
 adj_freq = (Df - Pf) / ((1000 - Pf * Tp) / 1000);
