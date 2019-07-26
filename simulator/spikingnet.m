@@ -28,10 +28,10 @@ N_inp = net.group_sizes(1);
 v = ones(N, 1) * net.v_rest;
 vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
 last_spike_time = zeros(net.N, 1) * -Inf;
-p = zeros(net.N);
-if net.fixed_integrals
-    p = fixedintegrals(net, variance, -round(delays));
-end
+% p = zeros(net.N);
+% if net.fixed_integrals
+%     p = fixedintegrals(net, variance, -round(delays));
+% end
 current_steps = 40;  % TODO : This needs to be based off step size and max delay etc. or we can just make it a hyperparam... 
 upcoming_current = zeros(N, current_steps);
 upcur_idx = 1;
@@ -59,6 +59,15 @@ I0 = net.fgi;
 If = net.If;
 Tf = net.Tf;
 anneal_gradient = (I0 - If) / (Tf * ms_per_sec);
+
+if net.fixed_integrals
+    variance_precision = 0.01;
+    % TODO : Rename ptable to something more representative
+    [ ptable ] = buildlookuptable(net.variance_min : variance_precision : net.variance_max, ...
+                                1 : net.delay_max, ...
+                                1 : current_steps, ...
+                                net.fgi);
+end
 
 % output variables
 out.timing_info.init_toc = toc(out.timing_info.init_time);
@@ -99,6 +108,8 @@ for sec = 1 : net.sim_time_sec
         % Simulated annealing
         if net.use_simulated_annealing && mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
             net.fgi = net.fgi - (anneal_gradient * net.seq_freq_ms);
+            % TODO : update these references to p to be ptable
+            assert(false, 'Using old fixed integral method');
             p = fixedintegrals(net, variance, -round(delays));
         end
         
@@ -106,7 +117,7 @@ for sec = 1 : net.sim_time_sec
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
         debug(time, 4) = Iapp(4);
         
-        %% TIMER < 1
+        %% TIMER
         out.timing_info.profiling_tocs(1, time) = toc(ms_tic);
         
         %% Update membrane voltages
@@ -120,7 +131,7 @@ for sec = 1 : net.sim_time_sec
         end
         vt(:, time) = v(net.voltages_to_save);
         
-        %% TIMER < 1
+        %% TIMER 
         out.timing_info.profiling_tocs(2, time) = toc(ms_tic);
         
         %% Deal with neurons that just spiked
@@ -150,7 +161,7 @@ for sec = 1 : net.sim_time_sec
         spike_time_trace = [spike_time_trace; time*ones(length(fired),1), fired];
         last_spike_time(fired) = time; 
         
-        %% TIMER < 1
+        %% TIMER
         out.timing_info.profiling_tocs(3, time) = toc(ms_tic);
         
         %% Update upcoming current based on who spiked
@@ -159,22 +170,41 @@ for sec = 1 : net.sim_time_sec
         else
             fired_delays = delays(fired, :);
         end
-        sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
-        sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
-        s = repmat(variance(fired, :), 1, 1, current_steps);
+        %sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
+        %sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
+        %s = repmat(variance(fired, :), 1, 1, current_steps);
         
-        %% TIMER 16 %
+        %% TIMER
         out.timing_info.profiling_tocs(4, time) = toc(ms_tic);
         
-        if net.fixed_integrals
-            p_fired = repmat(p(fired, :), 1, 1, current_steps);
-        else
-            p_fired = net.fgi ./ sqrt(2 * pi * s);
-        end
+        fired_var = round(variance(fired, :), 2);
+        fired_conns = find(fired_delays);
+        conn_variances = round((round(fired_var(fired_conns), 2) / 0.01) - 9);
+        conn_delays = fired_delays(fired_conns);
 
-        gauss = p_fired .* exp(- (sample_idxs .^ 2) ./ (2 * s));
-        gsum = sum(gauss, 1);
-        g = squeeze(gsum);
+        fired_idxs = sub2ind(size(ptable), ...
+                    repmat(conn_variances, current_steps, 1), ...
+                    repmat(conn_delays, current_steps, 1), ...
+                    reshape(repmat(1:current_steps, numel(conn_delays), 1), [], 1));
+        
+        fired_values = ptable(fired_idxs);
+        
+        %% TODO fix : Hack becuase i only have one neuron, not general
+        stepped_current = reshape(fired_values, numel(fired_conns), []);
+        output_current = sum(stepped_current);
+        g = zeros(N, current_steps);
+        g(N, :) = output_current;
+        
+%         if net.fixed_integrals
+%             p_fired = repmat(p(fired, :), 1, 1, current_steps);
+%         else
+%             p_fired = net.fgi ./ sqrt(2 * pi * s);
+%         end
+
+        %gauss = p_fired .* exp(- (sample_idxs .^ 2) ./ (2 * s));
+        %gsum = sum(gauss, 1);
+        %g = squeeze(gsum);
+        %%
         
         weighted_gauss_samples = g;             % TODO: HACK - need to consider the case where w ~= 1
         weighted_gauss_samples(isnan(weighted_gauss_samples)) = 0;
@@ -189,7 +219,7 @@ for sec = 1 : net.sim_time_sec
         v_thres(fired) = v_thres(fired) + net.thres_rise;
         %debug = [debug; v_thres'];
         
-        %% TIMER  19 %
+        %% TIMER
         out.timing_info.profiling_tocs(5, time) = toc(ms_tic);
         
         %% lateral inhibition
@@ -210,7 +240,7 @@ for sec = 1 : net.sim_time_sec
         dApost = dApost * STDPdecaypost;
         %active_idx = mod(active_idx, net.delay_max) + 1;
         
-        %% TIMER 1%
+        %% TIMER
         out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
         %% SDVL
@@ -239,22 +269,22 @@ for sec = 1 : net.sim_time_sec
         variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
-        %% TIMER 6 %
+        %% TIMER
         out.timing_info.profiling_tocs(7, time) = toc(ms_tic);
         
-        % Correct peaks now variances and means have changed
-        if net.fixed_integrals && numel(fired) > 0
-            if do_rounding
-                fired_delays = round(delays(fired, :));
-            else
-                fired_dalays = delays(fired, :);
-            end
-            p(fired, :) = fixedintegrals(net, variance(fired, :), -fired_delays);
-            %debug = [debug; p(1:3, 4)'];
-        end
-        debug(time, 1:3) = p(1:3, 4)';
+%         % Correct peaks now variances and means have changed
+%         if net.fixed_integrals && numel(fired) > 0
+%             if do_rounding
+%                 fired_delays = round(delays(fired, :));
+%             else
+%                 fired_dalays = delays(fired, :);
+%             end
+%             p(fired, :) = fixedintegrals(net, variance(fired, :), -fired_delays);
+%             %debug = [debug; p(1:3, 4)'];
+%         end
+        %debug(time, 1:3) = p(1:3, 4)';
         
-        %% TIMER 56 %
+        %% TIMER
         out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
     
         %% Intrinsic plasticity threshold decay
@@ -274,7 +304,7 @@ for sec = 1 : net.sim_time_sec
         %% TIMER
         out.timing_info.profiling_tocs(9, time) = toc(ms_tic);
         
-                %% TIMER
+        %% TIMER
         out.timing_info.profiling_tocs(10, time) = toc(ms_tic);
 
         
@@ -283,7 +313,7 @@ for sec = 1 : net.sim_time_sec
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
     out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
     if mod(sec, 2) == 0 && net.print_progress
-        fprintf('Sim sec: %d, Real sec: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.init_time)/sec);
+        fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec);
         %clf;
         % TODO : Fix plotting
         %rasterspiketimes(spike_time_trace, 2000, 1);
@@ -293,7 +323,7 @@ for sec = 1 : net.sim_time_sec
 end    % of seconds for loop
 
 if net.print_progress
-    fprintf('Real seconds per simulated: %.3f \n', toc(out.timing_info.init_time) / sec);
+    fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss + %.3f seconds of intialisation\n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec, out.timing_info.init_toc);
 end
 
 out.vt = vt;
@@ -310,48 +340,91 @@ end
 
 
 function [ p ] = fixedintegrals(net, vars, sample_starts)
-
+    % This method was updated and then deprecated for the much faster
+    % look up table for getting integrals.
+    assert(false, 'deprecated');
     %% Fixed Integrals: Update peak values for any that fired
     p = net.fgi ./ sqrt(2 * pi * vars);  
+    epsilon = 0.1;
     do = true;
     small_peaks = 0;
+    big_peaks = 0;
     while do
         p = p + (0.005 .* small_peaks);
-        % Calc integral 
-        full_integral = zeros(size(sample_starts));
+        full_integral = zeros(size(sample_starts));      
+        p = p - (0.005 .* big_peaks);     % Also do bigs
+        
         for j = 1 : 40
             % Note: Converting exp( ... ) to a large constant matrix may be
             % faster than looping. (esp. twice...)
             step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
             full_integral = full_integral + step_integral;
         end
-        small_peaks = full_integral < net.fgi;
-        do = any(small_peaks(:));
+        small_peaks = full_integral < (net.fgi - epsilon);
+        big_peaks = full_integral > (net.fgi + epsilon);
+        do = any(small_peaks(:)) | any(big_peaks(:));
     end
     p(isinf(p)) = 0;
-    
-    % Didn't consider the case of peaks being too large to start with 
-    % i.e. from p = net.fgi ./ sqrt(2 * pi * vars); overestimating
-    big_peaks = 0;
-    do = true;
-    while do
-        p = p - (0.005 .* big_peaks);
-        % Calc integral 
-        full_integral = zeros(size(sample_starts));
-        for j = 1 : 40
-            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
-            full_integral = full_integral + step_integral;
-        end
-        big_peaks = full_integral > net.fgi;
-        do = any(big_peaks(:));
-    end
 
 end
 
 
 
+function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi)
+%% BUILDLOOKUPTABLE - Table for postsynaptic currents for given delay and variance
+%   Build a 3D table, where rows are a range of variances, columns are a
+%   range of delays and depths are an amount of current to deliver at that
+%   time step for the given delay and variance. 
+%   
+%   Params:
+%       The ranges to use for each parameter
+%
+%   Example usage:
+%       [ ptable ] = buildlookuptable(0.1 : 0.01 : 10, 1 : 1 : 20, 1 : 40)
+%
 
+    steps = repmat(reshape(steps_range, 1, 1, []), numel(var_range), numel(delays_range), 1);
+    delays = repmat(reshape(delays_range, 1, [], 1), numel(var_range), 1, numel(steps_range));
+    variances = repmat(reshape(var_range, [], 1, 1), 1, numel(delays_range), numel(steps_range));
 
+    exptable = exp(- ((steps - delays) .^ 2) ./ (2 * variances));
+    sample_starts = squeeze(-round(delays(:, :, 1)));
+    vars = squeeze(variances(:, :, 1));
+
+    %% Fixed Integrals: Update peak values for any that fired
+    %peaks = [];
+    p = fgi ./ sqrt(2 * pi * vars);  
+    epsilon = fgi * 0.01;
+    do = true;
+    small_peaks = 0;
+    big_peaks = 0;
+    adjustment_term = fgi * 0.0025;
+    while do
+        p = p + (adjustment_term .* small_peaks);
+        full_integral = zeros(size(sample_starts));      
+        p = p - (adjustment_term .* big_peaks);     % Do bigs in parallel
+
+        %[mean(p(:)), sum(small_peaks(:)), sum(big_peaks(:))]
+        %peaks = [peaks; sum(small_peaks(:)), sum(big_peaks(:))];
+        %plot(peaks);
+        %legend({'small', 'big'});
+        %drawnow();
+
+        for j = 1 : 40
+            % Note: Converting exp( ... ) to a large constant matrix may be
+            % faster than looping. (esp. twice...)
+            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
+            full_integral = full_integral + step_integral;
+        end
+        small_peaks = full_integral < (fgi - epsilon);
+        big_peaks = full_integral > (fgi + epsilon);
+        do = any(small_peaks(:)) | any(big_peaks(:));
+    end
+    %p(isinf(p)) = 0;
+
+    ptable = repmat(p, 1, 1, 40) .* exptable;
+
+end
 
 
 
