@@ -79,6 +79,7 @@ out.timing_info.plotting_tocs = [];
 out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 
 out.spike_time_trace = [];
+out.offsets = [];
 debug = zeros(net.sim_time_sec * ms_per_sec, 4);
 
 if net.print_progress
@@ -90,8 +91,9 @@ for sec = 1 : net.sim_time_sec
     spike_time_trace = [];
     
     if isa(net.data_generator,'function_handle')
-        [inp_trimmed, ts_trimmed] = net.data_generator();
+        [inp_trimmed, ts_trimmed, ~, ~, offsets] = net.data_generator();
         ts_trimmed = ts_trimmed + (sec -1) * 1000;
+        out.offsets = [out.offsets, offsets + (sec -1) * 1000];
     else
         % Trim data into seconds to speed searching later
         idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
@@ -115,7 +117,7 @@ for sec = 1 : net.sim_time_sec
         
         %% Calculate input
         Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
-        debug(time, 4) = Iapp(4);
+        debug(time, 4) = Iapp(sum(net.group_sizes));
         
         %% TIMER
         out.timing_info.profiling_tocs(1, time) = toc(ms_tic);
