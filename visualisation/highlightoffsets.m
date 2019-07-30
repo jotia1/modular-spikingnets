@@ -1,7 +1,12 @@
-function [] = highlightoffsets( offsets, Tp, hfig)
+function [] = highlightoffsets( offsets, Tp, Np, hfig)
 
 if ~exist('hfig', 'var')
     hfig = gcf;
+end
+
+ylim = get( gca, 'Ylim' );
+if ~exist('Np', 'var')
+    Np = ylim(2);
 end
 
 % highlight pattern
@@ -13,8 +18,8 @@ hold on
 for i = 1:numel(patt_locs)
     start_loc = patt_locs(i);
     xpos = start_loc + p_length + D_MAX;
-    ylim = get( gca, 'Ylim' );
-    patch([start_loc xpos xpos start_loc ], [ 0 0 ylim(2) ylim(2) ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
+    
+    patch([start_loc xpos xpos start_loc ], [ ylim(1) ylim(1) Np Np ], [0.6 0.4 0.9], 'FaceAlpha',0.5, 'EdgeColor','none')
 end
 
 drawnow;
