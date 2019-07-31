@@ -1,8 +1,12 @@
-function [ inp, ts, patt_inp, patt_ts, offsets ] = poisspattfreq(Tp, Df, N, Np, Pf, patt_inp, patt_ts)
+function [ inp, ts, patt_inp, patt_ts, offsets ] = poisspattfreq(Tp, Df, N, Np, Pf, patt_inp, patt_ts, pattfun)
 %% POISSPATTFREQ - Return a pattern in distractor noise with poisson freq
 %   Return a spike train with a pattern embedded in distractor noise and
 %   distributed according to a poisson distribution at the given frequency.
 %   Generates 1 second worth of data.
+%
+%   Note: pattfun should be a function handle that takes a pattern in form
+%   (inp, ts) and manipulates it in some way, returning a pattern in form
+%   (inp, ts) conforming to Tp, Np.
 %
 %   Example Usage:
 %       [ inp, ts, pattinp, pattts, offsets ] = poisspattfreq(50, 20, 2000, 500, 2, [], [])
@@ -31,9 +35,16 @@ for i = 1 : num_presentations
     inp(replaced_idxs) = [];
     ts(replaced_idxs) = [];
     
+    patt_toinsert = patt_inp;
+    ts_toinsert = patt_ts;
+
+    if exist('pattfun', 'var') && isa(pattfun, 'function_handle')
+        [patt_toinsert, ts_toinsert] = pattfun(patt_toinsert, ts_toinsert);
+    end
+    
     %Insert pattern in spots
-    inp = [inp, patt_inp];
-    ts = [ts, patt_ts + offset];
+    inp = [inp, patt_toinsert];
+    ts = [ts, ts_toinsert + offset];
     
 end
 
