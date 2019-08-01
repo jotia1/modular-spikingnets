@@ -64,6 +64,7 @@ I0 = net.fgi;
 If = net.If;
 Tf = net.Tf;
 anneal_gradient = (I0 - If) / (Tf * ms_per_sec);
+anneal_freq_ms = 500;
 
 if net.fixed_integrals
     variance_precision = 0.01;
@@ -113,11 +114,12 @@ for sec = 1 : net.sim_time_sec
         time = (sec - 1) * ms_per_sec + ms;
         
         % Simulated annealing
-        if net.use_simulated_annealing && mod(time, net.seq_freq_ms) == 0 && time < (Tf * ms_per_sec)
-            net.fgi = net.fgi - (anneal_gradient * net.seq_freq_ms);
-            % TODO : update these references to p to be ptable
-            assert(false, 'Using old fixed integral method');
-            p = fixedintegrals(net, variance, -round(delays));
+        if net.use_simulated_annealing && mod(time, anneal_freq_ms) == 0 && time < (Tf * ms_per_sec)
+            net.fgi = net.fgi - (anneal_gradient * anneal_freq_ms);
+            [ ptable ] = buildlookuptable(net.variance_min : variance_precision : net.variance_max, ...
+                                1 : net.delay_max, ...
+                                1 : current_steps, ...
+                                net.fgi);       
         end
         
         %% Calculate input
