@@ -23,8 +23,9 @@ if ~exist('vertlines', 'var')
     vertlines = false;
 end
 
-thousands = round(spike_times_trace(1, 1) / 1000);
-offset = thousands * 1000; 
+%thousands = round(spike_times_trace(1, 1) / 1000)
+thousands = 0;
+offset = 0; 
 filter = find(spike_times_trace(:,2) <= N_inp + N_hid & spike_times_trace(:,2) > N_inp & spike_times_trace(:,1) > offset);
 l2_spike_idxs = spike_times_trace(filter, 2);
 l2_spike_times = spike_times_trace(filter, 1);
