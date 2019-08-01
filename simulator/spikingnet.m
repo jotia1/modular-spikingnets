@@ -47,8 +47,13 @@ u = ones(N, 1) * -14;
 do_rounding = true;
 
 conns = w ~= 0;
-dApre = sparse(zeros(size(w)));
-dApost = sparse(zeros(size(w)));
+% HACK FOR SINGLE NEURON, should be NxN but is quite slow an unnecessary
+% right now
+assert(net.group_sizes(2) == 1, 'Simulator only supports 1 output neuron');
+dApre = zeros(N, 1);
+dApost = zeros(1, N);
+%dApre = zeros(size(w));
+%dApost = zeros(size(w));
 STDPdecaypre = exp(-1/net.taupre);
 STDPdecaypost = exp(-1/net.taupost);
 active_spikes = cell(net.delay_max, 1);  % To track when spikes arrive
@@ -178,37 +183,31 @@ for sec = 1 : net.sim_time_sec
         
         %% TIMER
         out.timing_info.profiling_tocs(4, time) = toc(ms_tic);
+        fired_values = [];
         
-        fired_var = round(variance(fired, :), 2);
-        fired_conns = find(fired_delays);
-        conn_variances = round((round(fired_var(fired_conns), 2) / 0.01) - 9);
-        conn_delays = fired_delays(fired_conns);
+            fired_var = round(variance(fired, :), 2);
+            fired_conns = find(fired_delays);
+            % TODO : hardcoded offset (-9) for variable table look up
+            conn_variances = round((round(fired_var(fired_conns), 2) / variance_precision) - 9);
+            conn_delays = fired_delays(fired_conns);
+            fired_w = w(fired, :);
+            conn_w = fired_w(fired_conns);
+            
+            
+        if numel(conn_variances) > 0
+            fired_idxs = sub2ind(size(ptable), ...
+                        repmat(conn_variances, current_steps, 1), ...
+                        repmat(conn_delays, current_steps, 1), ...
+                        reshape(repmat(1:current_steps, numel(conn_delays), 1), [], 1));
 
-        fired_idxs = sub2ind(size(ptable), ...
-                    repmat(conn_variances, current_steps, 1), ...
-                    repmat(conn_delays, current_steps, 1), ...
-                    reshape(repmat(1:current_steps, numel(conn_delays), 1), [], 1));
+            fired_values = ptable(fired_idxs);
+        end
         
-        fired_values = ptable(fired_idxs);
-        
-        %% TODO fix : Hack becuase i only have one neuron, not general
-        stepped_current = reshape(fired_values, numel(fired_conns), []);
+        stepped_current = conn_w .* reshape(fired_values, numel(fired_conns), []);
         output_current = sum(stepped_current);
-        g = zeros(N, current_steps);
-        g(N, :) = output_current;
         
-%         if net.fixed_integrals
-%             p_fired = repmat(p(fired, :), 1, 1, current_steps);
-%         else
-%             p_fired = net.fgi ./ sqrt(2 * pi * s);
-%         end
-
-        %gauss = p_fired .* exp(- (sample_idxs .^ 2) ./ (2 * s));
-        %gsum = sum(gauss, 1);
-        %g = squeeze(gsum);
-        %%
-        
-        weighted_gauss_samples = g;             % TODO: HACK - need to consider the case where w ~= 1
+        weighted_gauss_samples = zeros(N, current_steps);
+        weighted_gauss_samples(N, :) = output_current;
         weighted_gauss_samples(isnan(weighted_gauss_samples)) = 0;
         
         upcoming_current(:, upcur_idx) = 0;
@@ -231,11 +230,11 @@ for sec = 1 : net.sim_time_sec
         
         %% STDP
         % Any pre-synaptics weights should be increased
-        w(:, fired) = w(:, fired) + (dApost(:, fired) .* conns(:, fired));
+        w(:, fired) = w(:, fired) + (repmat(dApost(fired), 2001, 1) .* conns(:, fired));
         % Any post synaptic weights decrease
-        w(fired, :) = w(fired, :) + (dApre(fired, :) .* conns(fired, :));
-        dApost(fired, :) = dApost(fired, :) + net.Apost;
-        dApre(:, fired) = dApre(:, fired) + net.Apre;
+        w(fired, :) = w(fired, :) + (repmat(dApre(fired), 1, 2001) .* conns(fired, :));
+        dApost(fired) = dApost(fired) + net.Apost;
+        dApre(fired) = dApre(fired) + net.Apre;
         
         % STDP decay
         dApre = dApre * STDPdecaypre;
