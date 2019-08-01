@@ -16,25 +16,25 @@ end
 
 ms_per_sec = 1000;
 
+% SDVL variables
 delays = net.delays;
 delayst = zeros(numel(net.delays_to_save), net.N, net.sim_time_sec * ms_per_sec);
 variance = net.variance;
 vart = zeros(numel(net.variance_to_save), net.N, net.sim_time_sec * ms_per_sec);
 v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
-w = sparse(net.w);
 
 N = net.N;
 N_inp = net.group_sizes(1);
 v = ones(N, 1) * net.v_rest;
 vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
 last_spike_time = zeros(net.N, 1) * -Inf;
-% p = zeros(net.N);
-% if net.fixed_integrals
-%     p = fixedintegrals(net, variance, -round(delays));
-% end
-current_steps = 40;  % TODO : This needs to be based off step size and max delay etc. or we can just make it a hyperparam... 
+
+% TODO : current_steps should be based off step size and max delay etc. or 
+% we can just make it a hyperparam...???
+current_steps = 40;  
 upcoming_current = zeros(N, current_steps);
 upcur_idx = 1;
+
 % Dynamic threshold parameters
 v_thres = ones(size(v)) * net.v_thres;
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
@@ -46,7 +46,7 @@ a = ones(N, 1) * 0.02;
 u = ones(N, 1) * -14;
 do_rounding = true;
 
-conns = w ~= 0;
+% STDP variables
 % HACK FOR SINGLE NEURON, should be NxN but is quite slow an unnecessary
 % right now
 assert(net.group_sizes(2) == 1, 'Simulator only supports 1 output neuron');
@@ -56,8 +56,8 @@ dApost = zeros(1, N);
 %dApost = zeros(size(w));
 STDPdecaypre = exp(-1/net.taupre);
 STDPdecaypost = exp(-1/net.taupost);
-active_spikes = cell(net.delay_max, 1);  % To track when spikes arrive
-%active_idx = 1;
+w = sparse(net.w);
+conns = w ~= 0;
 
 %Simulated annealing parameters
 I0 = net.fgi;
@@ -121,7 +121,7 @@ for sec = 1 : net.sim_time_sec
         end
         
         %% Calculate input
-        Iapp = upcoming_current(:, upcur_idx); %sum(upcoming_current, 2);
+        Iapp = upcoming_current(:, upcur_idx);
         debug(time, 4) = Iapp(sum(net.group_sizes));
         
         %% TIMER
@@ -177,9 +177,6 @@ for sec = 1 : net.sim_time_sec
         else
             fired_delays = delays(fired, :);
         end
-        %sample_idxs = repmat(reshape(1 : current_steps, 1, 1, []), size(fired_delays));
-        %sample_idxs = sample_idxs - repmat(fired_delays, 1, 1, current_steps);
-        %s = repmat(variance(fired, :), 1, 1, current_steps);
         
         %% TIMER
         out.timing_info.profiling_tocs(4, time) = toc(ms_tic);
@@ -239,17 +236,13 @@ for sec = 1 : net.sim_time_sec
         % STDP decay
         dApre = dApre * STDPdecaypre;
         dApost = dApost * STDPdecaypost;
-        %active_idx = mod(active_idx, net.delay_max) + 1;
         
         %% TIMER
         out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
         %% SDVL
-        % TODO - consider if this should be done at the start of the ms or
-        % the end (here).
-        %[pre_idxs, post_idxs] = ind2sub(size(conns), find(conns(:, fired))); 
         t0 = repmat(time - last_spike_time, 1, numel(fired));
-        t0_negu = t0 - delays(:, fired);  % TODO - check this works with multiple fired
+        t0_negu = t0 - delays(:, fired);
         abst0_negu = abs(t0_negu);
         k = (variance(:, fired) + 0.9) .^2;
         shifts = sign(t0_negu) .* k .* net.nu;
@@ -271,19 +264,7 @@ for sec = 1 : net.sim_time_sec
         variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
         %% TIMER
-        out.timing_info.profiling_tocs(7, time) = toc(ms_tic);
-        
-%         % Correct peaks now variances and means have changed
-%         if net.fixed_integrals && numel(fired) > 0
-%             if do_rounding
-%                 fired_delays = round(delays(fired, :));
-%             else
-%                 fired_dalays = delays(fired, :);
-%             end
-%             p(fired, :) = fixedintegrals(net, variance(fired, :), -fired_delays);
-%             %debug = [debug; p(1:3, 4)'];
-%         end
-        %debug(time, 1:3) = p(1:3, 4)';
+        out.timing_info.profiling_tocs(7, time) = toc(ms_tic); 
         
         %% TIMER
         out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
@@ -311,15 +292,11 @@ for sec = 1 : net.sim_time_sec
         
     end  % of ms for loop
     
-    out.spike_time_trace = [out.spike_time_trace; spike_time_trace]; % TODO - optimise for speed if necessary
+    out.spike_time_trace = [out.spike_time_trace; spike_time_trace];
     out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
     if mod(sec, 2) == 0 && net.print_progress
         fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec);
-        %clf;
-        % TODO : Fix plotting
-        %rasterspiketimes(spike_time_trace, 2000, 1);
-        %drawnow;
-        var = 1;
+        % Can do optional plotting here later
     end
 end    % of seconds for loop
 
