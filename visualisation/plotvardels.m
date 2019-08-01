@@ -16,9 +16,6 @@ if ~exist('asraster', 'var')
     neurons = false;
 end
 
-if asraster
-    
-figure;
 subplot(2, 1, 1);
 if asraster
     plot(out.delays(:, 2001), '.');
