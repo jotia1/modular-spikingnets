@@ -1,0 +1,16 @@
+res_poifgi_final.mat - Is the effect of fgi on performance in the new model. Range is 0.0230 : 0.0001 : 0.0238.
+res_patdrp_final.mat - Is the effect of removing a percentage of neurons from each pattern presentation. What spikes are removed is randomly chosen for each presentation. Range is 0 : 0.1 : 100, being the percentaged dropped from each presentation
+res_relfrq_final.mat - Is the effect of the relative frequency of the pattern being presented. Range of frequency is 0.5 : 0.5 : 5.0
+res_mixvar_final.mat - Measure the effect of a mixed variance signal on performance. Mixed variance in range 0.0 : 0.5 : 5.0
+res_numaff_final.mat - Measures the effect of the number of afferents on the performance of the network, range is 50: 50 : 1000
+resultsdyn_final.mat - Effect of different starting fgi with dynamic error calculation. fgi range 0.0230 : 0.0001 : 0.0238
+resultsfix_final.mat - As per resultsdyn_final.mat but for fixed error calculation. 
+resultsdyn_final6.mat - As per resultsdyn_final.mat except for range 0.0226 : 0.0001 : 0.0229
+resultsfix_final6.mat - As per resultsdyn_final6.mat but for fixed error. 
+
+NOTE: Accuracy measure changed to only include the last seconds of simulation at this point.
+    Poisson patterns were also fixed to be less periodic (calculated in possible slots rather than a number per second evenly spaced).
+res_salfgi_final.mat - Explores the effects of simulated annealing when If is fixed to 0.0222 and fgi is varied from 0.0233 : 0.0001 : 0.0242, Tf is 30, accuracy evaluated on last 20 seconds only.
+res_salIf_final.mat - Explores the effect of simulated annearling when fgi is fixed to 0.0238 and If varied from 0.0215 : 0.0001 : 0.0226, Tf is 30, accuracy evaluated on last 20 seconds only.
+res_patxln_final.mat - Explores the effect of run time on performance. range is [30, 60, 90, 150, 240, 360, 450], Tf was set as sim_time_sec - 20, and last 20 seconds were test time, Performance is very poor, not sure why and didn't save enough to figure out.
+res_ptxlen_final.mat - As above, but with no simulated annealing, Pf = 5; fgi = 0.0230; 
