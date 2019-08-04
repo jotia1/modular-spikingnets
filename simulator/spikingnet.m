@@ -15,18 +15,20 @@ if net.rand_seed ~= -1
 end
 
 ms_per_sec = 1000;
+sim_time_ms = net.sim_time_sec * ms_per_sec;
 
 % SDVL variables
 delays = net.delays;
-delayst = zeros(numel(net.delays_to_save), net.N, net.sim_time_sec * ms_per_sec);
+delayst = zeros(numel(net.delays_to_save), net.N, sim_time_ms);
 variance = net.variance;
-vart = zeros(numel(net.variance_to_save), net.N, net.sim_time_sec * ms_per_sec);
-v_threst = zeros(numel(net.v_thres_to_save), net.sim_time_sec * ms_per_sec);
+vart = zeros(numel(net.variance_to_save), net.N, sim_time_ms);
+v_threst = zeros(numel(net.v_thres_to_save), sim_time_ms);
+iappt = zeros(numel(net.iapp_to_save), sim_time_ms);
 
 N = net.N;
 N_inp = net.group_sizes(1);
 v = ones(N, 1) * net.v_rest;
-vt = zeros(numel(net.voltages_to_save), net.sim_time_sec * ms_per_sec);
+vt = zeros(numel(net.voltages_to_save), sim_time_ms);
 last_spike_time = zeros(net.N, 1) * -Inf;
 
 % TODO : current_steps should be based off step size and max delay etc. or 
@@ -86,7 +88,7 @@ out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 
 out.spike_time_trace = [];
 out.offsets = [];
-debug = zeros(net.sim_time_sec * ms_per_sec, 4);
+debug = zeros(sim_time_ms, 0);
 
 if net.print_progress
     disp('Starting simulation');
@@ -124,7 +126,7 @@ for sec = 1 : net.sim_time_sec
         
         %% Calculate input
         Iapp = upcoming_current(:, upcur_idx);
-        debug(time, 4) = Iapp(sum(net.group_sizes));
+        %debug(time, 4) = Iapp(sum(net.group_sizes));
         
         %% TIMER
         out.timing_info.profiling_tocs(1, time) = toc(ms_tic);
@@ -284,6 +286,7 @@ for sec = 1 : net.sim_time_sec
         % save. (as opposed to vart(:, 1, :) which might seem sensible).
         delayst(:, :, time) = delays(:, net.delays_to_save)';
         vart(:, :, time) = variance(:, net.variance_to_save)';
+        iappt(:, time) = Iapp(net.iapp_to_save);
         
         %% TIMER
         out.timing_info.profiling_tocs(9, time) = toc(ms_tic);
@@ -310,6 +313,7 @@ out.vt = vt;
 out.vart = vart;
 out.delayst = delayst;
 out.v_threst = v_threst;
+out.iappt = iappt;
 out.w = w;
 out.variance = variance;
 out.delays = delays;
