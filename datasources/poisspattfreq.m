@@ -25,13 +25,20 @@ if ~exist('patt_inp', 'var') || ~exist('patt_ts', 'var') || ...
     patt_ts = ts(patt_filter);
 end
 
+max_delay = 20;
+slot_size = Tp + max_delay;
+num_slots = floor(1000 / slot_size); 
 
-num_presentations = min(10, poissrnd(Pf));
-for i = 1 : num_presentations
-    offset = (i-1) * ceil(1000 / num_presentations);
+probability = Pf / num_slots;
+selected_slots = find(rand(1, num_slots) < probability);
+offsets = [];
+
+for i = 1 : numel(selected_slots)
+    slot = selected_slots(i);
+    slot_offset = (slot - 1) * slot_size;
     
     % Delete old spikes
-    replaced_idxs = ts >= offset & ts <= (offset + Tp) & inp <= Np;
+    replaced_idxs = ts >= slot_offset & ts <= (slot_offset + Tp) & inp <= Np;
     inp(replaced_idxs) = [];
     ts(replaced_idxs) = [];
     
@@ -44,13 +51,43 @@ for i = 1 : num_presentations
     
     %Insert pattern in spots
     inp = [inp, patt_toinsert];
-    ts = [ts, ts_toinsert + offset];
-    
+    ts = [ts, ts_toinsert + slot_offset];
+    offsets = [offsets, slot_offset];
 end
 
-offsets = 0 : ceil(1000 / num_presentations) : 999;
-if num_presentations == 0
-    offsets = [];
-end
+
+%offsets = 0 : ceil(1000 / num_presentations) : 999;
+%if num_presentations == 0
+%    offsets = [];
+%end
+
+
+
+% num_presentations = min(10, poissrnd(Pf));
+% for i = 1 : num_presentations
+%     offset = (i-1) * ceil(1000 / num_presentations);
+%     
+%     % Delete old spikes
+%     replaced_idxs = ts >= offset & ts <= (offset + Tp) & inp <= Np;
+%     inp(replaced_idxs) = [];
+%     ts(replaced_idxs) = [];
+%     
+%     patt_toinsert = patt_inp;
+%     ts_toinsert = patt_ts;paper moon work
+% 
+%     if exist('pattfun', 'var') && isa(pattfun, 'function_handle')
+%         [patt_toinsert, ts_toinsert] = pattfun(patt_toinsert, ts_toinsert);
+%     end
+%     
+%     %Insert pattern in spots
+%     inp = [inp, patt_toinsert];
+%     ts = [ts, ts_toinsert + offset];
+%     
+% end
+% 
+% offsets = 0 : ceil(1000 / num_presentations) : 999;
+% if num_presentations == 0
+%     offsets = [];
+% end
 
 end
