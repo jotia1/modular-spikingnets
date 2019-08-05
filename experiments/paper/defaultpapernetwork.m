@@ -51,9 +51,10 @@ net.supervising = false;
  
 net.data_generator = @(pinp, pts) repeatingrefinedpattern(50, 10, 2000, pinp, pts);
 
-net.voltages_to_save = [2000:2001];
-net.variance_to_save = [2000:2001];
-net.delays_to_save = [2000:2001];
-net.v_thres_to_save = [2000:2001];
+net.voltages_to_save = [2001];
+net.variance_to_save = [];
+net.delays_to_save = [];
+net.v_thres_to_save = [];
+net.iapp_to_save = [2001];
 
 end

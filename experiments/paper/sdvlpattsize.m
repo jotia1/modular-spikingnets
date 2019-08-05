@@ -13,50 +13,56 @@ net.b1 = params(3);
 net.b2 = params(4);
 net.fgi = params(5);
 
+%% Parameters
+net.run_date = datestr(datetime);
 net.sim_time_sec = 50;
-
-Tp = 50;
-Df = 10;
-num_repeats = 50;
-Np = 1000;
-Pf = 2;
+net.Tp = 50;
+net.Df = 10;
+net.num_repeats = 50;
+net.Np = 1000;
+net.Pf = 2;
+net.fgi = 0.0236;
 N_inp = net.group_sizes(1);
+net.var_range = 0.0215 : 0.0001 : 0.0226;
+%% Simulated annealing params
+net.use_simulated_annealing = true;
+net.If = 0.0222;
+net.Tf = 30;
+net.test_seconds = 20;
 
-exp_name = 'relfrq';
+exp_name = 'salIf';
 output_folder = newoutputfolder(exp_name);
-values = zeros(10, num_repeats);
+net.output_folder = output_folder;
+values = zeros(numel(net.var_range), net.num_repeats);
 count = 1;
 
-rng(60);
 
-for repeat = 1 : num_repeats
+for repeat = 1 : net.num_repeats
     count = 1;
-%    for Np = 50: 50 : 1000
-%    for fgi = 0.0230 : 0.0001 : 0.0238
-    for Pf =  0.5 : 0.5 : 5.0
-        %[pinp, pts] = generateuniformpattern(Tp, Np);
-        %net.data_generator = @() repeatingrefinedpattern(Tp, Df, net.group_sizes(1), Np, pinp, pts);
-        [~, ~, net.pinp, net.pts, ~] = poisspattfreq(Tp, Df, N_inp, Np, Pf);
-        net.data_generator = @() poisspattfreq(Tp, Df, N_inp, Np, Pf, net.pinp, net.pts);
+    for If = net.var_range
         
-%        net.fgi = fgi;
+        net.pattfun = [];
+        [net.pinp, net.pts] = generatenoise(net.Np, net.Df, net.Tp);
+        net.data_generator = @() poisspattfreq(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun);
+        net.repeat = repeat;
+        net.count = count;
+        
+        net.rand_seed = repeat * 19 + count * 23; 
+        net.If = If;
         out = spikingnet(net);
 
         %value = detectionrate(net, out)
-        value = offsetaccuracy(net, out, Tp)
+        value = offsetaccuracy(net, out, net.Tp, net.test_seconds)
         
         values(count, repeat) = value;
         fprintf('%s: count: %d, repeat: %d \n', output_folder, count, repeat);
         try 
             filename = sprintf('%s/%s_%d_%d', output_folder, exp_name, count, repeat);
-            idxs = out.spike_time_trace(:, 2) == 2001;
-            trace = out.spike_time_trace(idxs, :);
-            offsets = out.offsets;
-            save(filename, 'trace', 'offsets', 'count', 'repeat');
+            save(filename, 'net', 'out', 'count', 'repeat');
         catch exception
             fprintf('Failed to write: %s\n', filename);
         end
-%
+
         try
             filename = sprintf('%s/res_%s_%d_%d', output_folder, exp_name, count, repeat);
             save(filename, 'values');
