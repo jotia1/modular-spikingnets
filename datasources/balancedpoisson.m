@@ -91,6 +91,7 @@ for r = 1 : 1
             %% Join all together
             ts = [ts, patt_ts + slot_offset, midts, topts, gapts];
             inp = [inp, patt_inp, midinp, topinp, gapinp];
+            offsets = [offsets, slot_offset];
 
         else                    % Pattern is NOT presented here
 
