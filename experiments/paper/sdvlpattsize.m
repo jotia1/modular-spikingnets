@@ -60,14 +60,14 @@ for repeat = 1 : net.num_repeats
             filename = sprintf('%s/%s_%d_%d', output_folder, exp_name, count, repeat);
             save(filename, 'net', 'out', 'count', 'repeat');
         catch exception
-            fprintf('Failed to write: %s\n', filename);
+            fprintf('Failed to write: %s\n%s\n\n', filename, getReport(exception));
         end
 
         try
             filename = sprintf('%s/res_%s_%d_%d', output_folder, exp_name, count, repeat);
             save(filename, 'values');
         catch exception
-            fprintf('Failed to write results: %s\n', filename);
+            fprintf('Failed to write results: %s\n%s\n\n', filename, getReport(exception));
         end
         count = count + 1;
     end
