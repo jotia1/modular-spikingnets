@@ -14,12 +14,7 @@ function [inp, ts, patt_inp, patt_ts, offsets] = balancedpoisson( Tp, Df, N, Np,
 % Example usage 
 %   [ inp, ts, patt_inp, patt_ts, offsets ] = balancedpoisson(50, 10, 2000, 500, 5, [], [])
 %
-%   NOTE: pattfun not yet supported
-%
 
-if exist('pattfun', 'var')
-    assert(isempty(pattfun), 'pattfun not yet supported');
-end
 
 if ~exist('patt_inp', 'var') || ~exist('patt_ts', 'var') || ...
      isempty(patt_inp) || isempty(patt_ts)
@@ -86,11 +81,17 @@ for r = 1 : 1
 
             gapinp = randi([Np + 1, N_inp], 1, adj_spikes);
             gapts = randi([Tp, slot_size], 1, adj_spikes) + slot_offset; 
-
+            
+            % Alter the pattern
+            patt_toinsert = patt_inp;
+            ts_toinsert = patt_ts;
+            if exist('pattfun', 'var') && isa(pattfun, 'function_handle')
+                [patt_toinsert, ts_toinsert] = pattfun(patt_toinsert, ts_toinsert);
+            end
 
             %% Join all together
-            ts = [ts, patt_ts + slot_offset, midts, topts, gapts];
-            inp = [inp, patt_inp, midinp, topinp, gapinp];
+            ts = [ts, ts_toinsert + slot_offset, midts, topts, gapts];
+            inp = [inp, patt_toinsert, midinp, topinp, gapinp];
             offsets = [offsets, slot_offset];
 
         else                    % Pattern is NOT presented here
