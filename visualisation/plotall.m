@@ -1,9 +1,13 @@
-function [ ] = plotall(net, out)
+function [ ] = plotall(net, out, plot_lines)
 %% PLOTALL - Plot a series of frequently used graphs in a tabbed figure
 %
-%
+%   Parameters:
+%       net - A network struct 
+%       out - A network output struct
+%       plot_lines - Whether output spike lines should be drawn
 %
 
+% TODO : Hardcoded...
 Tp = 50;
 
 figure;
@@ -12,8 +16,12 @@ tg = uitabgroup;
 %% Create raster plot
 rasttab = uitab(tg, 'Title', 'Raster plot');
 axes('Parent', rasttab);
-should_plot_lines = numel(find(out.spike_time_trace(:, 2) == 2001)) < 1000;
-rasterspiketimes(out.spike_time_trace, 2000, 1, should_plot_lines);
+
+if ~exist('plot_lines', 'var')
+    plot_lines = numel(find(out.spike_time_trace(:, 2) == 2001)) < 1000;
+end
+
+rasterspiketimes(out.spike_time_trace, 2000, 1, plot_lines);
 highlightoffsets(out.offsets, Tp);
     
 %% Create voltage plot
