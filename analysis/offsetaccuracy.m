@@ -16,13 +16,13 @@ function [ accuracy ] = offsetaccuracy(net, out, Tp, testing_seconds)
 if ~exist('testing_seconds', 'var')
     testing_seconds = net.sim_time_sec / 2;
 end
-testing_ms = testing_seconds * 1000;
+training_ms = (net.sim_time_sec - testing_seconds) * 1000;
 
 N = sum(net.group_sizes);
-filter = (out.spike_time_trace(:, 2) == N) & (out.spike_time_trace(:, 1) > testing_ms);
+filter = (out.spike_time_trace(:, 2) == N) & (out.spike_time_trace(:, 1) > training_ms);
 output_spike_times = out.spike_time_trace(filter, 1);
 
-test_offsets = out.offsets(out.offsets >= testing_ms);
+test_offsets = out.offsets(out.offsets >= training_ms);
 
 correct_spikes = 0;
 for i = 1 : numel(test_offsets)
