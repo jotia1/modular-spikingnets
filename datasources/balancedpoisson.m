@@ -87,7 +87,7 @@ for i = selected_slots
 
     inp = [inp, patt_toinsert, offset_inp];
     ts = [ts, ts_toinsert + offset, offset_ts + offset];
-    offsets = [offsets; offset];
+    offsets = [offsets, offset];
 end
 
 
