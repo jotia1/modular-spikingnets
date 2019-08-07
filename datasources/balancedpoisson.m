@@ -1,4 +1,4 @@
-function [inp, ts, patt_inp, patt_ts, offsets] = balancedpoisson( Tp, Df, N, Np, Pf, patt_inp, patt_ts, pattfun )
+function [inp, ts, patt_inp, patt_ts, offsets] = balancedpoisson( Tp, Df, N, Np, Pf, patt_inp, patt_ts, pattfun, dropout )
 %% BALANCEDPOISSON - Generate carefully balanced poisson input
 %   Generate an input stream such that there is no increase in activity
 %   either through time or for any given afferent such that detecting a
@@ -10,11 +10,17 @@ function [inp, ts, patt_inp, patt_ts, offsets] = balancedpoisson( Tp, Df, N, Np,
 %       N - Number of neurons
 %       Np - Number of neurons in pattern
 %       patt_inp/ts - The neurons in the pattern, related to patt_ts
+%       pattfun - the function to apply to the pattern
+%       dropout - the percentage to be dropped out
 %
 % Example usage 
-%   [ inp, ts, patt_inp, patt_ts, offsets ] = balancedpoisson(50, 10, 2000, 500, 5, [], [])
+%   [ inp, ts, patt_inp, patt_ts, offsets ] = balancedpoisson(50, 10, 2000, 500, 5, [], [], 0.0)
 %
 
+% If there are some dropped by patt fun, compensate by this amount
+if ~exist('dropout', 'var')
+    dropout = 0.0;
+end
 
 if ~exist('patt_inp', 'var') || ~exist('patt_ts', 'var') || ...
      isempty(patt_inp) || isempty(patt_ts)
@@ -22,129 +28,67 @@ if ~exist('patt_inp', 'var') || ~exist('patt_ts', 'var') || ...
 end
 
 N_inp = N;
+exp_spikes_in_presentation = round(Np * (1 - dropout));
+
 inp = [];
 ts = [];
+
+%% Calculate base frequencies 
+non_patt_time_sec = (1000 - Pf * Tp) / 1000;
+bottom_base_freq = (Df - (Pf * (1 - dropout))) / non_patt_time_sec;
+
+exp_N_inp_spikes_Tp = ceil(Df * Tp / 1000 * N_inp);
+exp_N_dist_spikes_Tp = exp_N_inp_spikes_Tp - exp_spikes_in_presentation;
+exp_total_N_dist_spikes_Tp = exp_N_dist_spikes_Tp * Pf;
+
+N_dist = N_inp - Np;
+exp_N_dist_total_spikes = Df * N_dist;
+exp_N_dist_total_spikes_npt = exp_N_dist_total_spikes - exp_total_N_dist_spikes_Tp;
+N_dist_npt_freq = exp_N_dist_total_spikes_npt / N_dist / non_patt_time_sec;
+
+
+%% Generate base spike trains
+toppoiss = poissrnd(N_dist_npt_freq * N_dist);
+top_inp = randi([Np + 1, N_inp], 1, toppoiss);
+top_ts = randi([1, 1000], 1, toppoiss);
+
+bottpoiss = poissrnd(Np * bottom_base_freq);
+bott_inp = randi([1, Np], 1, bottpoiss);
+bott_ts = randi([1, 1000], 1, bottpoiss);
+
+inp = [ inp, top_inp, bott_inp];
+ts = [ts, top_ts, bott_ts];
+
+
+%% Add offsets
+offsets = [];
 max_delay = 20;
 slot_size = Tp + max_delay;
-num_slots = floor(1000 / slot_size); % TODO dont forget the left over...
-
+num_slots = floor(1000 / slot_size);
 probability = Pf / num_slots;
-%selected_slots = find(rand(1, num_slots) < probability);
-offsets = [];
-for r = 1 : 1
-    for i = 1 : num_slots
-        slot_offset = (i - 1) * slot_size;
+selected_slots = find(rand(1, num_slots) < probability);
 
-        if rand() < probability    % Pattern is presented here
-
-            %% Make 1:Np for time Tp : Tp + max_delay
-            non_patt_time = 1000 - Pf * Tp;
-            % new frequency necessary to get Df - Pf spikes in whatever time is
-            % remaining. e.g. if pattern 5Hz and 50ms long it uses 250ms, thus
-            % if Df is 10hz the other fives spikes now need to happen in 750ms.
-            % adj_freq is the new frequency necessary.
-            adj_freq = (Df - Pf) / (non_patt_time / 1000);
-            adj_spikes = adj_freq * Np * (max_delay / 1000); % generate for max_delay ms only.
-
-            % choose adjusted number spikes probabilistically since it doesn't
-            % round nicely.
-            remainder = adj_spikes - fix(adj_spikes);
-            adj_spikes = floor(adj_spikes);
-            if rand() > remainder
-                adj_spikes = adj_spikes + 1;
-            end
-
-            midinp = randi([1, Np], 1, adj_spikes);
-            midts = randi([Tp, slot_size], 1, adj_spikes) + slot_offset; 
-
-
-            %% Make Np + 1 : N_inp from time 1 : Tp
-            exp_spikes = ceil(Df * Tp / 1000 * N_inp);
-            adj_spikes = exp_spikes - Np;
-            topinp = randi([Np + 1, N_inp], 1, adj_spikes);
-            topts = randi([1, Tp], 1, adj_spikes) + slot_offset; 
-
-
-            %% Make Np + 1 : N_inp from time Tp : Tp + max_delay
-            all_patt_offset_expected = (N_inp * Df * (Tp / 1000) - Np) * Pf;
-            rest_time_expected = Df * (N_inp - Np) - all_patt_offset_expected;
-            adj_freq = rest_time_expected / ((1000 - Pf * Tp) / 1000) / (N_inp - Np);
-            %exp_spikes = floor(Df * (N_inp) * (slot_size / 1000));
-            adj_spikes = adj_freq * (N_inp - Np) * (max_delay / 1000);
-
-            % choose adjusted slot number spike probabilistically
-            remainder = adj_spikes - fix(adj_spikes);
-            adj_spikes = floor(adj_spikes);
-            if rand() > remainder
-                adj_spikes = adj_spikes + 1;
-            end
-
-            gapinp = randi([Np + 1, N_inp], 1, adj_spikes);
-            gapts = randi([Tp, slot_size], 1, adj_spikes) + slot_offset; 
-            
-            % Alter the pattern
-            patt_toinsert = patt_inp;
-            ts_toinsert = patt_ts;
-            if exist('pattfun', 'var') && isa(pattfun, 'function_handle')
-                [patt_toinsert, ts_toinsert] = pattfun(patt_toinsert, ts_toinsert);
-            end
-
-            %% Join all together
-            ts = [ts, ts_toinsert + slot_offset, midts, topts, gapts];
-            inp = [inp, patt_toinsert, midinp, topinp, gapinp];
-            offsets = [offsets, slot_offset];
-
-        else                    % Pattern is NOT presented here
-
-            %% Make 1:Np for time 1 : Tp + max_delay
-            non_patt_time = 1000 - Pf * Tp;
-            % new frequency necessary to get Df - Pf spikes in whatever time is
-            % remaining. e.g. if pattern 5Hz and 50ms long it uses 250ms, thus
-            % if Df is 10hz the other fives spikes now need to happen in 750ms.
-            % adj_freq is the new frequency necessary.
-            adj_freq = (Df - Pf) / (non_patt_time / 1000);
-            adj_spikes = adj_freq * Np * (slot_size / 1000); % generate for max_delay ms only.
-
-            % choose adjusted number spikes probabilistically since it doesn't
-            % round nicely.
-            remainder = adj_spikes - fix(adj_spikes);
-            adj_spikes = floor(adj_spikes);
-            if rand() > remainder
-                adj_spikes = adj_spikes + 1;
-            end
-
-            midinp = randi([1, Np], 1, adj_spikes);
-            midts = randi([1, slot_size], 1, adj_spikes) + slot_offset; 
-
-            %% non pattern gaps
-            all_patt_offset_expected = (N_inp * Df * (Tp / 1000) - Np) * Pf;
-            rest_time_expected = Df * (N_inp - Np) - all_patt_offset_expected;
-            adj_freq = rest_time_expected / ((1000 - Pf * Tp) / 1000) / (N_inp - Np);
-            adj_spikes = adj_freq * (N_inp - Np) * (slot_size / 1000);
-
-            % choose adjusted slot number spike probabilistically
-            remainder = adj_spikes - fix(adj_spikes);
-            adj_spikes = floor(adj_spikes);
-            if rand() > remainder
-                adj_spikes = adj_spikes + 1;
-            end
-
-            rightinp = randi([Np + 1, N_inp], 1, adj_spikes);
-            rightts = randi([1, slot_size], 1, adj_spikes) + slot_offset;
-
-            ts = [ts, midts, rightts];
-            inp = [inp, midinp, rightinp];
-        end
-
-
-    end
-    %% catch the left overs
-    slots_end = num_slots * slot_size;
-    extra = 1000 - slots_end;
-    exp_spikes = (extra / 1000) * Df * N_inp;
-    ts = [ts, randi([slots_end, 1000], 1, exp_spikes)];
-    inp = [inp, randi([1, N_inp], 1, exp_spikes)];
+for i = selected_slots
+    offset = (i - 1) * slot_size;
     
+    filter = ts > offset & ts < offset + Tp;
+    ts(filter) = [];
+    inp(filter) = [];
+
+    offsetpoiss = poissrnd(exp_N_dist_spikes_Tp);
+    offset_inp = randi([Np + 1, N_inp], 1, offsetpoiss);
+    offset_ts = randi([1, Tp], 1, offsetpoiss);
+
+    patt_toinsert = patt_inp;
+    ts_toinsert = patt_ts;
+    if exist('pattfun', 'var') && isa(pattfun, 'function_handle')
+        [patt_toinsert, ts_toinsert] = pattfun(patt_toinsert, ts_toinsert);
+    end
+
+    inp = [inp, patt_toinsert, offset_inp];
+    ts = [ts, ts_toinsert + offset, offset_ts + offset];
+    offsets = [offsets; offset];
 end
+
 
 end
