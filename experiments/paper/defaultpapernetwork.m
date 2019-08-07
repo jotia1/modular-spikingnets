@@ -46,10 +46,16 @@ net.use_simulated_annealing = false;
 net.If = 3.226; %4.026;
 net.Tf = 514.6;
 
-net.sim_time_sec = 10;
+net.sim_time_sec = 150;
 net.supervising = false;
  
-net.data_generator = @(pinp, pts) repeatingrefinedpattern(50, 10, 2000, pinp, pts);
+net.Tp = 50;
+net.Np = 500;
+net.Df = 10;
+net.Pf = 5;
+net.pattfun = [];
+[net.pinp, net.pts] =  generateuniformpattern( net.Tp, net.Np );
+net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun);
 
 net.voltages_to_save = [2001];
 net.variance_to_save = [];
