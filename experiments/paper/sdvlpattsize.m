@@ -15,22 +15,25 @@ net.fgi = params(5);
 
 %% Parameters
 net.run_date = datestr(datetime);
-net.sim_time_sec = 50;
+net.sim_time_sec = 150;
 net.Tp = 50;
 net.Df = 10;
 net.num_repeats = 50;
-net.Np = 1000;
-net.Pf = 2;
-net.fgi = 0.0236;
+net.Np = 500;
+net.Pf = 5;
+net.fgi = 0.0234;
+net.dropout = 0.0;
 N_inp = net.group_sizes(1);
-net.var_range = 0.0215 : 0.0001 : 0.0226;
+net.var_range = 0.0220 : 0.0001 : 0.0228;
+var_range = net.var_range;
 %% Simulated annealing params
-net.use_simulated_annealing = true;
+net.use_simulated_annealing = false;
 net.If = 0.0222;
 net.Tf = 30;
-net.test_seconds = 20;
+net.test_seconds = 50;
+duplicate_num = 3;
 
-exp_name = 'salIf';
+exp_name = sprintf('150jits8', duplicate_num);
 output_folder = newoutputfolder(exp_name);
 net.output_folder = output_folder;
 values = zeros(numel(net.var_range), net.num_repeats);
@@ -39,16 +42,30 @@ count = 1;
 
 for repeat = 1 : net.num_repeats
     count = 1;
-    for If = net.var_range
+    for var = net.var_range
+
+        net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
+        rng(net.preset_seed);
+        net.rand_seed = -1;  % don't set inside simulator.
         
-        net.pattfun = [];
-        [net.pinp, net.pts] = generatenoise(net.Np, net.Df, net.Tp);
-        net.data_generator = @() poisspattfreq(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun);
+        % Set experiment variable
+        %net.Pf = var;
+        %net.dropout = var;
+        %net.Np = var;  % Num aff
+        net.jit = var;
+        %net.fgi = var;
+
+        %pvariances = rand(1, net.Np) * net.pvar_max;
+        %pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
+        %pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
+        net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
+        %pattfun = [];
+        
+        [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
+        net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
         net.repeat = repeat;
         net.count = count;
         
-        net.rand_seed = repeat * 19 + count * 23; 
-        net.If = If;
         out = spikingnet(net);
 
         %value = detectionrate(net, out)
@@ -58,14 +75,17 @@ for repeat = 1 : net.num_repeats
         fprintf('%s: count: %d, repeat: %d \n', output_folder, count, repeat);
         try 
             filename = sprintf('%s/%s_%d_%d', output_folder, exp_name, count, repeat);
-            save(filename, 'net', 'out', 'count', 'repeat');
+            % decrease file sizes...
+            out.spike_time_trace = out.spike_time_trace(out.spike_time_trace(:, 2) == 2001, :);
+            save(filename, 'net', 'out', 'count', 'repeat', '-v7.3');
         catch exception
-            fprintf('Failed to write: %s\n%s\n\n', filename, getReport(exception));
+            err = lasterror;
+            fprintf('Failed to write: %s\n%s\n\n%s\n\n', filename, getReport(exception), err.message);
         end
 
         try
             filename = sprintf('%s/res_%s_%d_%d', output_folder, exp_name, count, repeat);
-            save(filename, 'values');
+            save(filename, 'values', 'var_range', '-v7.3');
         catch exception
             fprintf('Failed to write results: %s\n%s\n\n', filename, getReport(exception));
         end
@@ -74,6 +94,6 @@ for repeat = 1 : net.num_repeats
 end
 
 filename = sprintf('%s/res_%s_final', output_folder, exp_name);
-save(filename, 'values');
+save(filename, 'values', 'var_range', '-v7.3');
 
 end
