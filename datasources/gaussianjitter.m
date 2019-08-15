@@ -10,6 +10,6 @@ function [inp , ts ] = gaussianjitter(inp, ts, jitter)
 %   Usage: 
 %       [inp , ts ] = gaussianjitter(inp, ts, 1)
 
-ts = ts + round(rand(size(ts))) * jitter;
+ts = ts + round(rand(size(ts)) * jitter);
 
 end
