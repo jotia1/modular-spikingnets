@@ -44,6 +44,9 @@ res_26jit_final.mat - As above
 res_28jit_final.mat - additional range for jit plot, eventually combined into bigjit.
 res_30jit_final.mat - Continuation of exploring the jitter effect, last section of the range, eventually combined with 26jit, 28jit into bigjit
 res_6frq_final.mat - Redoing the frequency plot in a new range 0.5 : 0.5 : 6.0 instead of the old 1 : 1 : 10
+res_low450_final.mat - a set of 450 long experiments with low fgi
 res_bigjit_final.mat - A post processed combination of 26jit 28jit and 30jit, now covers range 2 : 2 : 44 ms
 
 NOTE: Just did the off by 1 balancedpoisson noise fix (likely cause of >35% random chance error). drp and naf (and all) will likely need to be repeated.
+NOTE: Also adjusted the error in ptables to be <1e-4 (0.01%, instead of 1%). This may also affect performance...
+
