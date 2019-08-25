@@ -14,7 +14,7 @@ res_salfgi_final.mat - Explores the effects of simulated annealing when If is fi
 res_salIf_final.mat - Explores the effect of simulated annearling when fgi is fixed to 0.0238 and If varied from 0.0215 : 0.0001 : 0.0226, Tf is 30, accuracy evaluated on last 20 seconds only.
 res_patxln_final.mat - Explores the effect of run time on performance. range is [30, 60, 90, 150, 240, 360, 450], Tf was set as sim_time_sec - 20, and last 20 seconds were test time, Performance is very poor, not sure why and didn't save enough to figure out.
 res_ptxlen_final.mat - As above, but with no simulated annealing, Pf = 5; fgi = 0.0230; full logging now added.
-res_pfgi5h_final.mat - Exploring the role of the FGI with a Pf of 5hz. range is ..... Note this was before switching to balancedpoisson as a datasource
+res_pfgi5h_final.mat - Exploring the role of the FGI with a Pf of 5hz. range is 0.0230 : 0.0001 : 0.0238 Note this was before switching to balancedpoisson as a datasource
 
 NOTE: Switched to balancedpoisson for datasource
 res_5hnmaf_final.mat - This is the 5Hz Pf number of afferents trial range is 50 : 100 : 1000, sim_time_sec = 150, test_seconds = 50
@@ -22,4 +22,28 @@ res_5hfgi1_final.mat - This is the 5Hz Pf poifgi experiemnt, mainly for me to se
 res_5h150fgi1_final.mat - 5Hz version, 150seconds, 30 repeats, 50 test_seconds, range 0.0222 : 0.0004 : 0.0238 
 res_5hfreq_final.mat - As above but for frequency - range 0.5 : 0.5 : 5.0
 res_5hmixv_final.mat - As above but for mixed variance, range 0.0 : 0.5 : 5.0
-res_5hpdrp_final.mat - As above but for spike deletion, range 0 : 20 : 100
+
+NOTE: Accuracy was miscalcualted for the above, considered all spikes > testing_seconds not within testing seconds of the end.
+res_5hdrop_final.mat - As above but for spike deletion, range 0 : 0.1 : 1 - Lots of missing data and issue with this run, not worth recovering
+res_150drp_final.mat - var_range defined in res file
+res_150frq_final.mat - var_range defined in res file
+res_150naf_final.mat - var_range defined in res file
+res_150fgi1_final.mat - var_range defined in res file
+res_450fgi1_final.mat - var_range defined in res file, 450 second simulation, Last 50 seconds for testing.
+res_150jit_final.mat - Probable error - pattfun was overwritten with [] menaing no jitter was added.
+res_150jits_final.mat - A repeat of jitter split over 3 jobs, ranges 0 : 1 : 2, 3 : 1 : 5, 6 : 1 : 8 (for speed reasons) it would seem 150jit (no s) didn't have the jitter...
+res_parfgi150_final.mat - made up of parfgi1504 and 7 both smaller ranges to be combined with 150fgi1 for a wider range.
+res_parfgi450_final.mat - Made up of parfgi45057 and 80 being the ranges 0.0225-8 (added together with 450fgi1 for wider range).
+
+NOTE: default fgi now shifted to 0.0226
+res_26frq_final.mat - This and below are all repeats with the fgi set to 0.0226
+res_26naf_final.mat - As above
+res_26drp_final.mat - As above
+res_26jit_final.mat - As above
+
+res_28jit_final.mat - additional range for jit plot, eventually combined into bigjit.
+res_30jit_final.mat - Continuation of exploring the jitter effect, last section of the range, eventually combined with 26jit, 28jit into bigjit
+res_6frq_final.mat - Redoing the frequency plot in a new range 0.5 : 0.5 : 6.0 instead of the old 1 : 1 : 10
+res_bigjit_final.mat - A post processed combination of 26jit 28jit and 30jit, now covers range 2 : 2 : 44 ms
+
+NOTE: Just did the off by 1 balancedpoisson noise fix (likely cause of >35% random chance error). drp and naf (and all) will likely need to be repeated.
