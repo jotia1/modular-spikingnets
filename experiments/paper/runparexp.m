@@ -3,15 +3,17 @@
 %
 %   Note : Saving values inside parfor not yet supported.
 
-parpool(4); 
+addpath(genpath('../../'));
+parpool(24); 
 
-duplicate_num = 1;
+duplicate_num = 3;
 num_repeats = 50;
 
-exp_name = sprintf('parfgi08', duplicate_num);
+exp_name = sprintf('low450', duplicate_num);
 output_folder = newoutputfolder(exp_name);
-net.output_folder = output_folder;
-values = zeros(numel(net.var_range), net.num_repeats);
+var_range = 0.0218 : 0.0002 : 0.0228;
+num_range = numel(var_range);
+values = zeros(num_range, num_repeats);
 
 
 parfor repeat = 1 : num_repeats
@@ -20,20 +22,19 @@ parfor repeat = 1 : num_repeats
 
     %% Parameters
     net.run_date = datestr(datetime);
-    net.sim_time_sec = 150;
+    net.sim_time_sec = 450;
     net.test_seconds = 50;
-    net.var_range = 0.0220 : 0.0001 : 0.0228;
-    var_range = net.var_range;
-    num_range = numel(var_range);
+    net.var_range = var_range;
     
     net.Tp = 50;
     net.Df = 10;
     net.num_repeats = num_repeats;
     net.Np = 500;
     net.Pf = 5;
-    net.fgi = 0.0228;
+    net.fgi = 0.0226;
     net.dropout = 0.0;
     N_inp = net.group_sizes(1);
+    net.output_folder = output_folder;
 
     
     %% Simulated annealing params
@@ -55,11 +56,11 @@ parfor repeat = 1 : num_repeats
         %net.jit = var;
         net.fgi = var;
 
+        net.pattfun = [];
         %pvariances = rand(1, net.Np) * net.pvar_max;
-        %pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
-        %pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
+        %net.pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
+        %net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
         %net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
-        pattfun = [];
         
         [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
         net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
@@ -70,6 +71,7 @@ parfor repeat = 1 : num_repeats
 
         %value = detectionrate(net, out)
         value = offsetaccuracy(net, out, net.Tp, net.test_seconds)
+        out.accuracy = value;
         
         values(count, repeat) = value;
         fprintf('progress %s: count: %d, repeat: %d \n', output_folder, count, repeat);
@@ -77,7 +79,7 @@ parfor repeat = 1 : num_repeats
             filename = sprintf('%s/%s_%d_%d', output_folder, exp_name, count, repeat);
             % decrease file sizes...
             out.spike_time_trace = out.spike_time_trace(out.spike_time_trace(:, 2) == 2001, :);
-            parfor_save(filename, net, out, count, repeat);
+            prog_save(filename, net, out, count, repeat);
         catch exception
             err = lasterror;
             fprintf('Failed to write: %s\n%s\n\n%s\n\n', filename, getReport(exception), err.message);
@@ -93,7 +95,11 @@ parfor repeat = 1 : num_repeats
 end
 
 filename = sprintf('%s/res_%s_final', output_folder, exp_name);
-save(filename, 'values', 'var_range', 'net', '-v7.3');
+save(filename, 'values', 'var_range', '-v7.3');
+
+function [] = prog_save(filename, net, out, count, repeat)
+    save(filename, 'net', 'out', 'count', 'repeat', '-v7.3');
+end
 
 
 
