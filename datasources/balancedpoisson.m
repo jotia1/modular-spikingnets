@@ -14,7 +14,7 @@ function [inp, ts, patt_inp, patt_ts, offsets] = balancedpoisson( Tp, Df, N, Np,
 %       dropout - the percentage to be dropped out
 %
 % Example usage 
-%   [ inp, ts, patt_inp, patt_ts, offsets ] = balancedpoisson(50, 10, 2000, 500, 5, [], [], 0.0)
+%   [ inp, ts, patt_inp, patt_ts, offsets ] = balancedpoisson(50, 10, 2000, 500, 5, [], [], [], 0.0)
 %
 
 % If there are some dropped by patt fun, compensate by this amount
@@ -71,7 +71,7 @@ selected_slots = find(rand(1, num_slots) < probability);
 for i = selected_slots
     offset = (i - 1) * slot_size;
     
-    filter = ts > offset & ts < offset + Tp;
+    filter = ts > offset & ts <= offset + Tp;
     ts(filter) = [];
     inp(filter) = [];
 

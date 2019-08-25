@@ -35,11 +35,9 @@ if numel(net.voltages_to_save) > 0
 end
 
 %% Create variance and delay raster plot
-if numel(net.variance_to_save) > 0 && numel(net.delays_to_save) > 0
-    vdrstab = uitab(tg, 'Title', 'var-del raster');
-    axes('Parent', vdrstab);
-    plotvardels(net, out, [1], true);
-end
+vdrstab = uitab(tg, 'Title', 'var-del raster');
+axes('Parent', vdrstab);
+plotvardels(net, out, [1], true);
 
 %% Show Iapp plot
 if numel(net.iapp_to_save) > 0
