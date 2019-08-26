@@ -10,6 +10,7 @@ function [inp , ts ] = gaussianjitter(inp, ts, jitter)
 %   Usage: 
 %       [inp , ts ] = gaussianjitter(inp, ts, 1)
 
-ts = ts + round(rand(size(ts)) * jitter);
+% TODO : Hardcoded wrap around 50ms pattern
+ts = mod(ts + round(randn(size(ts)) .* jitter), 50);
 
 end
