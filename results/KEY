@@ -49,4 +49,7 @@ res_bigjit_final.mat - A post processed combination of 26jit 28jit and 30jit, no
 
 NOTE: Just did the off by 1 balancedpoisson noise fix (likely cause of >35% random chance error). drp and naf (and all) will likely need to be repeated.
 NOTE: Also adjusted the error in ptables to be <1e-4 (0.01%, instead of 1%). This may also affect performance...
-
+res_pt*_final.mat - Did a series of experiments with a pt annotation, for post ptable fixes, all run with 0.0226 fgi fpr 150 secs (bad results), gaussian jitter fix had not been applied
+ljit - running for 450 seconds 0.0227 fgi - Run post jit fix
+lnaf - running for 450 seconds 0.0227 fgi
+lfrq - running for 450 seconds 0.0227 fgi
