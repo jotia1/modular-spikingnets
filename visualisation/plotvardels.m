@@ -18,7 +18,7 @@ end
 
 subplot(2, 1, 1);
 if asraster
-    plot(out.delays(:, 2001), '.');
+    plot(out.delays(:, net.N), '.');
 else
     plottrace(out.delayst, neurons);
 end
@@ -26,7 +26,7 @@ title('Delays');
 
 subplot(2, 1, 2);
 if asraster
-    plot(out.variance(:, 2001), '.');
+    plot(out.variance(:, net.N), '.');
 else
     plottrace(out.vart, neurons);
 end

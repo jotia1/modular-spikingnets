@@ -18,10 +18,10 @@ rasttab = uitab(tg, 'Title', 'Raster plot');
 axes('Parent', rasttab);
 
 if ~exist('plot_lines', 'var')
-    plot_lines = numel(find(out.spike_time_trace(:, 2) == 2001)) < 1000;
+    plot_lines = numel(find(out.spike_time_trace(:, 2) == net.N)) < 1000;
 end
 
-rasterspiketimes(out.spike_time_trace, 2000, 1, plot_lines);
+rasterspiketimes(out.spike_time_trace, net.group_sizes(1), 1, plot_lines);
 highlightoffsets(out.offsets, Tp);
     
 %% Create voltage plot
