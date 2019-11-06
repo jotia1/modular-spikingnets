@@ -9,10 +9,10 @@ num_repeats = 20;
 
 exp_name = sprintf('ssdvl', duplicate_num);
 output_folder = newoutputfolder(exp_name);
-var_range = 1 : 1 : 9;
-beta_range = 1 : 1 : 9;
+grid_size = 9;
+var_range = 1 : 1 : grid_size * grid_size;
 num_range = numel(var_range);
-values = zeros(num_range, numel(beta_range), num_repeats);
+values = zeros(num_range, num_repeats);
 
 
 parfor repeat = 1 : num_repeats
@@ -42,8 +42,11 @@ parfor repeat = 1 : num_repeats
     net.Tf = 30;
 
     for count = 1 : num_range
-    for beta = beta_range
-        var = net.var_range(count);
+	
+        tvar = net.var_range(count);
+	%var = tvar / floor((tvar - 1) / grid_size) + 1;
+	%beta = mod(tvar, grid_size);
+	[var, beta] = ind2sub([grid_size, grid_size], tvar);
 
         net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
         rng(net.preset_seed);
@@ -79,7 +82,7 @@ parfor repeat = 1 : num_repeats
         value = offsetaccuracy(net, out, net.Tp, net.test_seconds)
         out.accuracy = value;
 
-        values(count, beta, repeat) = value;
+        values(count, repeat) = value;
         fprintf('progress %s: alpha: %d, beta: %d, repeat: %d\n', output_folder, net.a1, net.b1, repeat);
         try 
             filename = sprintf('%s/%s_%d_%d_%d', output_folder, exp_name, net.a1, net.b1, repeat);
@@ -97,8 +100,6 @@ parfor repeat = 1 : num_repeats
         catch exception
             fprintf('Failed to write results: %s\n%s\n\n', filename, getReport(exception));
         end
-
-    end
     end
 end
 
