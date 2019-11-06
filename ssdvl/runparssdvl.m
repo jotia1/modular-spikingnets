@@ -12,7 +12,7 @@ output_folder = newoutputfolder(exp_name);
 var_range = 1 : 1 : 9;
 beta_range = 1 : 1 : 9;
 num_range = numel(var_range);
-values = zeros(num_range, num_repeats);
+values = zeros(num_range, numel(beta_range), num_repeats);
 
 
 parfor repeat = 1 : num_repeats
@@ -71,6 +71,7 @@ parfor repeat = 1 : num_repeats
         net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
         net.repeat = repeat;
         net.count = count;
+	net.beta = beta;
 
         out = ssdvl(net);
 
@@ -78,7 +79,7 @@ parfor repeat = 1 : num_repeats
         value = offsetaccuracy(net, out, net.Tp, net.test_seconds)
         out.accuracy = value;
 
-        values(count, repeat) = value;
+        values(count, beta, repeat) = value;
         fprintf('progress %s: alpha: %d, beta: %d, repeat: %d\n', output_folder, net.a1, net.b1, repeat);
         try 
             filename = sprintf('%s/%s_%d_%d_%d', output_folder, exp_name, net.a1, net.b1, repeat);
