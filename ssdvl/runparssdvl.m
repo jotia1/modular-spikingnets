@@ -5,23 +5,23 @@ addpath(genpath('../'));
 parpool(1); 
 
 duplicate_num = 1;
-num_repeats = 9;
+num_repeats = 20;
 
 exp_name = sprintf('ssdvl', duplicate_num);
 output_folder = newoutputfolder(exp_name);
 var_range = 1 : 1 : 9;
+beta_range = 1 : 1 : 9;
 num_range = numel(var_range);
 values = zeros(num_range, num_repeats);
 
 
-% alpha is specified by repeat
 parfor repeat = 1 : num_repeats
     
     net = defaultpapernetwork();
 
     %% Parameters
     net.run_date = datestr(datetime);
-    net.sim_time_sec = 150;
+    net.sim_time_sec = 10;
     net.test_seconds = 50;
     net.var_range = var_range;
 
@@ -42,6 +42,7 @@ parfor repeat = 1 : num_repeats
     net.Tf = 30;
 
     for count = 1 : num_range
+    for beta = beta_range
         var = net.var_range(count);
 
         net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
@@ -54,9 +55,9 @@ parfor repeat = 1 : num_repeats
         %net.Np = var;  % Num aff
         %net.jit = var;
         %net.fgi = var;
-        net.a1 = repeat;   % Alpha is repeat
+        net.a1 = var;   % Alpha is repeat
         net.a2 = net.a1;
-        net.b1 = var;       % Beta is var
+        net.b1 = beta;       % Beta is var
         net.b2 = net.b1;
         net.nu = net.nv;
 
@@ -78,11 +79,11 @@ parfor repeat = 1 : num_repeats
         out.accuracy = value;
 
         values(count, repeat) = value;
-        fprintf('progress %s: count: %d, repeat: %d \n', output_folder, count, repeat);
+        fprintf('progress %s: alpha: %d, beta: %d, repeat: %d\n', output_folder, net.a1, net.b1, repeat);
         try 
-            filename = sprintf('%s/%s_%d_%d', output_folder, exp_name, count, repeat);
+            filename = sprintf('%s/%s_%d_%d_%d', output_folder, exp_name, net.a1, net.b1, repeat);
             % decrease file sizes...
-            out.spike_time_trace = out.spike_time_trace(out.spike_time_trace(:, 2) == 2001, :);
+            out.spike_time_trace = out.spike_time_trace(out.spike_time_trace(:, 2) == net.N, :);
             prog_save(filename, net, out, count, repeat);
         catch exception
             err = lasterror;
@@ -90,11 +91,13 @@ parfor repeat = 1 : num_repeats
         end
 
         try
-            filename = sprintf('%s/res_%s_%d_%d', output_folder, exp_name, count, repeat);
+            filename = sprintf('%s/res_%s_%d_%d_%d', output_folder, exp_name, net.a1, net.b1, repeat);
             %parfor_save(filename, values, var_range);
         catch exception
             fprintf('Failed to write results: %s\n%s\n\n', filename, getReport(exception));
         end
+
+    end
     end
 end
 
