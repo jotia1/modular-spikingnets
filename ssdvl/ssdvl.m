@@ -230,7 +230,7 @@ for sec = 1 : net.sim_time_sec
         end
         
         % if testing
-        if sec < net.training_seconds
+        if sec < (net.sim_time_sec - net.test_seconds)
         
             %% STDP
             % Any pre-synaptics weights should be increased
@@ -251,7 +251,7 @@ for sec = 1 : net.sim_time_sec
         
         %% SDVL
         % if testing
-        if sec < net.training_seconds
+        if sec < (net.sim_time_sec - net.test_seconds)
             
             t0 = repmat(time - last_spike_time, 1, numel(fired));
             t0_negu = t0 - delays(:, fired);
@@ -379,7 +379,7 @@ function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi
 %       [ ptable ] = buildlookuptable(0.1 : 0.01 : 10, 1 : 1 : 20, 1 : 40)
 %
 
-    accuracy = 1e-3;
+    accuracy = 1e-4;
     ptable_filename = [erase(sprintf('ptable_%.4f_%.0e.mat', fgi, accuracy), '.'), '.mat'];
     
     if exist(ptable_filename, 'file') == 2
