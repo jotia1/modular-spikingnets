@@ -229,45 +229,55 @@ for sec = 1 : net.sim_time_sec
             v(net.lateral_inhibition) = net.v_reset;         
         end
         
-        %% STDP
-        % Any pre-synaptics weights should be increased
-        w(:, fired) = w(:, fired) + (repmat(dApost(fired), net.N, 1) .* conns(:, fired));
-        % Any post synaptic weights decrease
-        w(fired, :) = w(fired, :) + (repmat(dApre(fired), 1, net.N) .* conns(fired, :));
-        dApost(fired) = dApost(fired) + net.Apost;
-        dApre(fired) = dApre(fired) + net.Apre;
+        % if testing
+        if sec < net.training_seconds
         
-        % STDP decay
-        dApre = dApre * STDPdecaypre;
-        dApost = dApost * STDPdecaypost;
+            %% STDP
+            % Any pre-synaptics weights should be increased
+            w(:, fired) = w(:, fired) + (repmat(dApost(fired), net.N, 1) .* conns(:, fired));
+            % Any post synaptic weights decrease
+            w(fired, :) = w(fired, :) + (repmat(dApre(fired), 1, net.N) .* conns(fired, :));
+            dApost(fired) = dApost(fired) + net.Apost;
+            dApre(fired) = dApre(fired) + net.Apre;
+
+            % STDP decay
+            dApre = dApre * STDPdecaypre;
+            dApost = dApost * STDPdecaypost;
+        
+        end
         
         %% TIMER
         out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
         %% SDVL
-        t0 = repmat(time - last_spike_time, 1, numel(fired));
-        t0_negu = t0 - delays(:, fired);
-        abst0_negu = abs(t0_negu);
-        k = (variance(:, fired) + 0.9) .^2;
-        shifts = sign(t0_negu) .* k .* net.nu;
+        % if testing
+        if sec < net.training_seconds
+            
+            t0 = repmat(time - last_spike_time, 1, numel(fired));
+            t0_negu = t0 - delays(:, fired);
+            abst0_negu = abs(t0_negu);
+            k = (variance(:, fired) + 0.9) .^2;
+            shifts = sign(t0_negu) .* k .* net.nu;
+
+            % Update SDVL mean
+            du = zeros(size(t0_negu));
+            %du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
+            du(t0 >= 1) = -k(t0 >= 1) .* net.nu;
+            du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
+
+            delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
+            delays(conns) = max(1, min(net.delay_max, delays(conns)));
+
+            % Update SDVL variance
+            dvar = (ones(size(t0_negu)) .* -k) .* net.nv;  % TODO : check k is the right size and this operation is happening nicely. 
+            %dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
+            dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
+
+            variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
+            variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
         
-        % Update SDVL mean
-        du = zeros(size(t0_negu));
-        %du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
-        du(t0 >= 1) = -k(t0 >= 1) .* net.nu;
-        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
-
-        delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
-        delays(conns) = max(1, min(net.delay_max, delays(conns)));
-
-        % Update SDVL variance
-        dvar = (ones(size(t0_negu)) .* -k) .* net.nv;  % TODO : check k is the right size and this operation is happening nicely. 
-        %dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
-        dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
-
-        variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
-        variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
-        
+        end
+            
         %% TIMER
         out.timing_info.profiling_tocs(7, time) = toc(ms_tic); 
         
