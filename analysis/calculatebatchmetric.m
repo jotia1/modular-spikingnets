@@ -1,4 +1,4 @@
-function [ result ] = calculatebatchmetric(filepath, metric)
+%function [ result ] = calculatebatchmetric(filepath, metric)
 %% CALCULATEBATCHMETRIC - Calculate a given metric over some results
 %   Given a filepath and a metric iterate through the directory and all
 %   files calculating the metric. Returns a NxM matrix of the metric for
@@ -17,28 +17,28 @@ function [ result ] = calculatebatchmetric(filepath, metric)
 %
 
 addpath(genpath('../'));
-parpool(8); 
+parpool(4); 
+
+filepath = 'mdrp00';
 result_filename = 'mdrp_pfc';
+rows = 11;
+cols = 100;
+total_num = rows * cols;
 
-files = dir([filepath, '/', filepath(1:end-2), '*.mat']);
+result = zeros(rows, cols);
+for i = 1 : total_num
 
-result = [];
-parfor file = files'
-    fprintf('load file: %s\n', file.name);
-    info = load([filepath, '/', file.name]);
+    [row, col] = ind2sub([rows, cols], i);
+    fname = sprintf('%s/%s_%d_%d.mat', filepath, filepath(1:end-2), row, col);
+    fprintf('load file: %s\n', fname);
     
-    % parse row and col from filename
-    filenamesplit = split(replace(file.name, '.mat', ''), '_');
-    assert(numel(filenamesplit) == 3, sprintf('Too many values when splitting filename, unknown format: %s', file.name));
-    
-    row = str2num(filenamesplit{2});
-    col = str2num(filenamesplit{3});
-    
-    result(row, col) = metric(info.net, info.out);
+    info = load(fname);
+  
+    result(i) = percentoffsetscorrect(info.net, info.out);
     
 end
 
 save(result_filename, 'result', '-v7.3');
 
 
-end
+%end
