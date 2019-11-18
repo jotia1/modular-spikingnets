@@ -13,6 +13,8 @@ function [ accuracy ] = offsetaccuracy(net, out, Tp, testing_seconds)
 %
 %   Assumes there is only 1 output neuron. 
 
+assert(false, 'deprecated - Use calculatebatchmetric');
+
 if ~exist('testing_seconds', 'var')
     testing_seconds = net.sim_time_sec / 2;
 end

@@ -1,15 +1,13 @@
-function [ result ] = percentagecorrect(net, out)
-%% PERCENTAGECORRECT - Given a networks output, calculate the percentage correct
-%   Given a network and its output calculate the percentage of correct
-%   classifications.
+function [ result ] = correctspikes(net, out)
+%% CORRECTSPIKES - Calculate the number of spikes within offsets
+%   Count the number of spikes occuring during pattern periods. NOTE this
+%   includes duplicates in the same period.
 %
-%   NOTE: 
-%       -
+%   Parameters:
+%       net - the network struct
+%       out - the network output struct
 %
-%
-%
-
-assert(false, 'Unfinished');
+%   Assumes there is only 1 output neuron. 
 
 testing_seconds = net.test_seconds;
 training_ms = (net.sim_time_sec - testing_seconds) * 1000;
@@ -29,7 +27,6 @@ for i = 1 : numel(test_offsets)
     
 end
 
-result = correct_spikes / );
-
+result = correct_spikes;
 
 end

@@ -1,5 +1,7 @@
 function [ accuracy ] = calcAccuracy( net, out )
 
+    assert(false, 'Review before use');
+
     num_inputs = net.group_sizes(1);
     
     output_spikes = out.spike_time_trace(out.spike_time_trace(:, 2) > num_inputs, :);
