@@ -2,17 +2,22 @@
 %   Same as runparexp but for ssdvl
 
 addpath(genpath('../'));
-parpool(1); 
+parpool(24); 
 
-duplicate_num = 1;
-num_repeats = 20;
+duplicate_num = 2;
+num_repeats = 24;
 
-exp_name = sprintf('ssdvl', duplicate_num);
+exp_name = sprintf('ssdvlgrid', duplicate_num);
 output_folder = newoutputfolder(exp_name);
-grid_size = 9;
+grid_size = 16;
 var_range = 1 : 1 : grid_size * grid_size;
 num_range = numel(var_range);
 values = zeros(num_range, num_repeats);
+pocs = zeros(num_range, num_repeats);
+css = zeros(num_range, num_repeats);
+nmos = zeros(num_range, num_repeats);
+iss = zeros(num_range, num_repeats);
+tpxtn = zeros(num_range, num_repeats);
 
 
 parfor repeat = 1 : num_repeats
@@ -21,7 +26,7 @@ parfor repeat = 1 : num_repeats
 
     %% Parameters
     net.run_date = datestr(datetime);
-    net.sim_time_sec = 10;
+    net.sim_time_sec = 150;
     net.test_seconds = 50;
     net.var_range = var_range;
 
@@ -42,52 +47,76 @@ parfor repeat = 1 : num_repeats
     net.Tf = 30;
 
     for count = 1 : num_range
-	
-        tvar = net.var_range(count);
-	%var = tvar / floor((tvar - 1) / grid_size) + 1;
-	%beta = mod(tvar, grid_size);
-	[var, beta] = ind2sub([grid_size, grid_size], tvar);
+	    try
+            tvar = net.var_range(count);
+            %var = tvar / floor((tvar - 1) / grid_size) + 1;
+            %beta = mod(tvar, grid_size);
+            [var, beta] = ind2sub([grid_size, grid_size], tvar);
 
-        net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
-        rng(net.preset_seed);
-        net.rand_seed = -1;  % don't set inside simulator.
+            net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
+            rng(net.preset_seed);
+            net.rand_seed = -1;  % don't set inside simulator.
 
-        % Set experiment variable
-        %net.Pf = var;
-        %net.dropout = var;
-        %net.Np = var;  % Num aff
-        %net.jit = var;
-        %net.fgi = var;
-        net.a1 = var;   % Alpha is repeat
-        net.a2 = net.a1;
-        net.b1 = beta;       % Beta is var
-        net.b2 = net.b1;
-        net.nu = net.nv;
+            % Set experiment variable
+            %net.Pf = var;
+            %net.dropout = var;
+            %net.Np = var;  % Num aff
+            %net.jit = var;
+            %net.fgi = var;
+            net.a1 = var;   % Alpha is repeat
+            net.a2 = net.a1;
+            net.b1 = beta;       % Beta is var
+            net.b2 = net.b1;
+            net.nu = net.nv;
 
-        net.pattfun = [];
-        %pvariances = rand(1, net.Np) * net.pvar_max;
-        %net.pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
-        %net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
-        %net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
+            net.pattfun = [];
+            %pvariances = rand(1, net.Np) * net.pvar_max;
+            %net.pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
+            %net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
+            %net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
 
-        [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
-        net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
-        net.repeat = repeat;
-        net.count = count;
-	net.beta = beta;
+            [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
+            net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
+            net.repeat = repeat;
+            net.count = count;
+            net.beta = beta;
 
-        out = ssdvl(net);
+            out = ssdvl(net);
 
-        %value = detectionrate(net, out)
-        value = offsetaccuracy(net, out, net.Tp, net.test_seconds)
-        out.accuracy = value;
+            %value = detectionrate(net, out)
+            value = percentoffsetscorrect(net, out);
+            
+            %  LOG multiple metrics.
+            pocs(count, repeat) = value;
+            css(count, repeat) = correctspikes(net, out);
+            nmos(count, repeat) = missedoffsets(net, out);
+            iss(count, repeat) = incorrectspikes(net, out);
+            tpxtn(count, repeat) = trueposxtrueneg(net, out);
+            out.accuracy = value;
 
-        values(count, repeat) = value;
-        fprintf('progress %s: alpha: %d, beta: %d, repeat: %d\n', output_folder, net.a1, net.b1, repeat);
+            values(count, repeat) = value;
+            fprintf('progress %s: alpha: %d, beta: %d, repeat: %d\n', output_folder, net.a1, net.b1, repeat);
+        catch exception
+            err = lasterror;
+            fprintf('------------- ERRROR with simulator---------------------: \n%s\n\n%s\n\n', getReport(exception), err.message);
+        end
+
+
         try 
             filename = sprintf('%s/%s_%d_%d_%d', output_folder, exp_name, net.a1, net.b1, repeat);
             % decrease file sizes...
             out.spike_time_trace = out.spike_time_trace(out.spike_time_trace(:, 2) == net.N, :);
+            %out.w = ;
+            out.timing_info = [];
+            out.variance = sparse(out.variance);
+            out.delays = sparse(out.delays);
+
+            
+            % Sparsify net
+            net.w = sparse(net.w);
+            net.delays = sparse(net.delays);
+            net.variance = sparse(net.variance);
+
             prog_save(filename, net, out, count, repeat);
         catch exception
             err = lasterror;
@@ -104,7 +133,7 @@ parfor repeat = 1 : num_repeats
 end
 
 filename = sprintf('%s/res_%s_final', output_folder, exp_name);
-save(filename, 'values', 'var_range', '-v7.3');
+save(filename, 'values', 'var_range', 'pocs', 'css', 'iss', 'nmos', 'tpxtn', '-v7.3');
 
 function [] = prog_save(filename, net, out, count, repeat)
     save(filename, 'net', 'out', 'count', 'repeat', '-v7.3');

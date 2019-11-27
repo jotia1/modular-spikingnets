@@ -17,28 +17,48 @@
 %
 
 addpath(genpath('../'));
-parpool(4); 
+parpool(3); 
 
-filepath = 'mdrp00';
-result_filename = 'mdrp_pfc';
-rows = 11;
-cols = 100;
-total_num = rows * cols;
+%   Par pool, filepath
+%   result_filename,
+%   rows and cols!!!
 
-result = zeros(rows, cols);
-for i = 1 : total_num
+filepaths= {'mfgi00'};
+%result_filename = 'sSDVLdrp_tpxtn';
 
-    [row, col] = ind2sub([rows, cols], i);
-    fname = sprintf('%s/%s_%d_%d.mat', filepath, filepath(1:end-2), row, col);
-    fprintf('load file: %s\n', fname);
-    
-    info = load(fname);
-  
-    result(i) = percentoffsetscorrect(info.net, info.out);
-    
+for f = filepaths
+    filepath = f{1};
+
+    rows = 11;
+    cols = 100;
+    if strcmp(filepath, 'mfrq01') == 1
+        rows = 10;
+    end
+    if strcmp(filepath, 'mfgi00') == 1
+        rows = 9;
+        cols = 24;
+    end
+
+    total_num = rows * cols;
+
+    fprintf('Reading %s... %d, %d\n', filepath, rows, cols);
+    result_filename = sprintf('%s_tpxtn', filepath(1:end-2));
+
+    values = zeros(rows, cols);
+    parfor i = 1 : total_num
+
+        [row, col] = ind2sub([rows, cols], i);
+        fname = sprintf('%s/%s_%d_%d.mat', filepath, filepath(1:end-2), row, col);
+        fprintf('load file: %s\n', fname);
+        
+        info = load(fname);
+      
+        %values(i) = percentoffsetscorrect(info.net, info.out);
+        values(i) = trueposxtrueneg(info.net, info.out);
+    end    
+    save(result_filename, 'values', '-v7.3');
 end
 
-save(result_filename, 'result', '-v7.3');
 
 
 %end
