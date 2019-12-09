@@ -5,7 +5,7 @@ addpath(genpath('../'));
 %
 rng(1);
 SIM_TIME=sim_time_sec;
-fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'real');
+fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
 nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
 a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
 b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
@@ -14,7 +14,8 @@ b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
 fun = @(x) optimisenetwork(x, SIM_TIME);
 results = bayesopt(fun, [fgivar, a1var, b1var, nuvar],'Verbose',1,...
     'AcquisitionFunctionName','expected-improvement-plus', ...
-    'NumSeedPoints', 50, 'MaxObjectiveEvaluations',1000, 'UseParallel',true)
+    'NumSeedPoints', 50, 'MaxObjectiveEvaluations',1000,
+    'UseParallel',true);
 
 
 % load ionosphere
@@ -35,7 +36,7 @@ function [ acc ] = optimisenetwork( x, SIM_TIME )
     net = defaultpapernetwork();
     net.rand_seed = -1;
     net.run_date = datestr(datetime);
-    net.sim_time_sec = SIM_TIME
+    net.sim_time_sec = SIM_TIME;
 
     net.Tp = 50;
     net.Df = 10;
@@ -44,10 +45,10 @@ function [ acc ] = optimisenetwork( x, SIM_TIME )
     net.dropout = 0.0;
     net.test_seconds = 50;
     
-    net.fgi = x.fgi;
+    net.fgi = (220 + x.fgi) / 1e4; % Hack to avoid need for many ptables
     net.a1 = x.a1; net.a2 = x.a1;
     net.b1 = x.b1; net.b2 = x.b1;
-    net.nu = x.eta; net.nv = x.eta;
+    net.nu = x.nu; net.nv = x.nu;
 
     net.use_simulated_annealing = false;
     net.If = 0.0222;
@@ -56,13 +57,13 @@ function [ acc ] = optimisenetwork( x, SIM_TIME )
     % Set up pattern
     net.pattfun = [];
     [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );         
-    net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
+    net.data_generator = @() balancedpoisson(net.Tp, net.Df, net.group_sizes(1), net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
 
 
     
     out = ssdvl(net);
 
-    acc = trueposxtrueneg(net, out);
+    acc = 1 - trueposxtrueneg(net, out);
     %%%   DO NOT USE BELOW METRICS - MIGHT HAVE ERRORS
     %acc = -percentagecorrect(net, out, labels);
     %acc = -calcAccuracy(net, out);

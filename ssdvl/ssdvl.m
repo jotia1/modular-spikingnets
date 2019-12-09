@@ -379,7 +379,7 @@ function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi
 %       [ ptable ] = buildlookuptable(0.1 : 0.01 : 10, 1 : 1 : 20, 1 : 40)
 %
 
-    accuracy = 1e-4;
+    accuracy = 1e-3;
     ptable_filename = [erase(sprintf('ptable_%.4f_%.0e.mat', fgi, accuracy), '.'), '.mat'];
     
     if exist(ptable_filename, 'file') == 2
@@ -405,13 +405,14 @@ function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi
     big_peaks = 0;
     adjustment_term = fgi * accuracy * 0.05;
     count = 0;
+    show_plot = false;
     while do
         count = count + 1;
         p = p + (adjustment_term .* small_peaks);
         full_integral = zeros(size(sample_starts));      
         p = p - (adjustment_term .* big_peaks);     % Do bigs in parallel
 
-        if mod(count, 100) == 0
+        if show_plot && mod(count, 100) == 0
            %[mean(p(:)), sum(small_peaks(:)), sum(big_peaks(:))]
            peaks = [peaks; sum(small_peaks(:)), sum(big_peaks(:))];
            plot(peaks);
