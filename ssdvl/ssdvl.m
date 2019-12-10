@@ -379,13 +379,15 @@ function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi
 %       [ ptable ] = buildlookuptable(0.1 : 0.01 : 10, 1 : 1 : 20, 1 : 40)
 %
 
-    accuracy = 1e-3;
+    accuracy = 1e-4;
     ptable_filename = [erase(sprintf('ptable_%.4f_%.0e.mat', fgi, accuracy), '.'), '.mat'];
     
     if exist(ptable_filename, 'file') == 2
         load(ptable_filename, 'ptable');
         fprintf('Loading ptable: %s\n', ptable_filename);
         return
+    else
+        fprintf('Creating ptable: %s\n', ptable_filename);
     end
 
     steps = repmat(reshape(steps_range, 1, 1, []), numel(var_range), numel(delays_range), 1);
