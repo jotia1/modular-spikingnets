@@ -1,38 +1,45 @@
-function [] = executebayes(script, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec)
+function [] = executebayes(script, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, cpus, exp_name, exp_num, exp_notes, exp_secs)
     %% play with optimisation
     addpath(genpath('../'));
 
-    %
+    %% TEMP HACK
+    exp_name = num2str(exp_name)
+
+    % Try stopping 30 mins early so running trials can end before getting slurmed
+    exp_secs = exp_secs - (30 * 60);  % 30 minutes x 60 seconds
     rng(1);
     SIM_TIME=sim_time_sec;
-    parpool(24);
-    exp_name = 'optim';
+    parpool(cpus);
+    output_folder = newoutputfolder(exp_name);
+    
 
     if script == 1 % SSDVL Bayes
-        result = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec);
+        result = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
     elseif script == 2  %% SDVL Bayes
-        result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec);
+        result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
     elseif script == 3 % SSDVL GA
-        result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec)
+        result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs)
     else
         fprintf('ERROR: Got invalud script number: %d is not valid', script);
+        return
     end
 
-    output_folder = newoutputfolder(exp_name);
     filename = sprintf('%s/opt_%s_final', output_folder, exp_name);
-    save(filename, 'result', '-v7.3');
+    save(filename, 'result', 'exp_num', 'exp_notes', '-v7.3');
 
 end
 
-function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec)
+function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
     fprintf('start optimising with GA');
 
     fun = @(x) ssdvlnetwork(x, sim_time_sec);
     numvariables = 4; 
 
-    opts = optimoptions(@ga,'PlotFcn',{@gaplotbestf,@gaplotstopping});
-    opts.PopulationSize = 75;
-    opts = optimoptions(opts,'MaxGenerations', 10,'MaxStallGenerations', 9,'UseParallel',true);
+    opts = optimoptions(@ga,'OutputFcn', @(options, state, flag) logpop(options, state, flag, foldername));
+    opts.PopulationSize = 12;
+    opts = optimoptions(opts,'MaxGenerations', 10, 'MaxStallGenerations', 7,...
+        'MaxTime', exp_secs, ...
+        'UseParallel',true);
 
     % Bounds:
     lb = [alphamin, betamin, etamin, fgimin];
@@ -40,11 +47,12 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
     %lb = [1; 0.1; 0.1; 1; 1; 1; 1; 1; 1];
     %ub = [10; 0.5; 0.5; 9; 9; 9; 9; 10; Inf];
 
-    [x,Fval,exitFlag,Output] = ga(fun, numvariables, [],[],[],[], lb, ub,[],opts);
+    [x,Fval,exitFlag,Output,population,scores] = ga(fun, numvariables, [],[],[],[], lb, ub,[],opts);
 
     results = struct();
     results.x = x; results.exitFlag = exitFlag; 
     results.Fval = Fval; results.Output = Output;
+    results.population = population; results.scores = scores;
 
     fprintf('The number of generations was : %d\n', Output.generations);            
     fprintf('The number of function evaluations was : %d\n', Output.funccount);     
@@ -53,24 +61,25 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
 end
 
 
-function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec)
+function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
     fprintf('Start optimising ssdvl');
     fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
     nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
     a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
     b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
+    savefilename = sprintf('%s/prog.mat', foldername);
 
-    fun = @(x) ssdvlnetwork(x, SIM_TIME);
+    fun = @(x) ssdvlnetwork(x, sim_time_sec);
     results = bayesopt(fun, [fgivar, a1var, b1var, nuvar],'Verbose',1,...
         'AcquisitionFunctionName','expected-improvement-plus', ...
-        'NumSeedPoints', 50, 'MaxObjectiveEvaluations',1000, ...
-        'SaveFileName', 'bayesprog.mat', 'OutputFcn', @saveToFile, ...
-        'MaxTime', 1 * 30 * 60, ... %% Max of 12 hours runtime
+        'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
+        'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
+        'MaxTime', exp_secs, ... 
         'UseParallel',true);
 end
 
 
-function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec)
+function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
     fprintf('Start optimising SDVL');
     fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
     nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
@@ -79,11 +88,14 @@ function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, 
     a2var = optimizableVariable('a2', [alphamin, alphamax], 'Type', 'integer');
     b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
     b2var = optimizableVariable('b2', [betamin, betamax], 'Type', 'integer');
+    savefilename = sprintf('%s/prog.mat', foldername);
 
-    fun = @(x) sdvlnetwork(x, SIM_TIME);
+    fun = @(x) sdvlnetwork(x, sim_time_sec);
     results = bayesopt(fun, [fgivar, a1var, a2var, b1var, b2var, nuvar, nvvar],'Verbose',1,...
         'AcquisitionFunctionName','expected-improvement-plus', ...
-        'NumSeedPoints', 50, 'MaxObjectiveEvaluations',1000, ...
+        'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
+        'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
+        'MaxTime', exp_secs, ...
         'UseParallel',true);
 end
 
@@ -207,3 +219,19 @@ function [ acc ] = sdvlnetwork( x, SIM_TIME )
 
 end
 
+function [state, options, optchanged] = logpop(options, state, flag, outfolder)
+
+    filename = sprintf('%s/poplog.mat', outfolder);
+    fprintf('Try to save pop for Generation: %d\nFilename: %s, folder: %s\n', state.Generation, filename, outfolder);
+
+    if exist(filename) == 0 % No file yet
+        poplog = [state.Population, state.Score];
+    else
+        load(filename, 'poplog');
+        poplog(:, :, end+1) = [state.Population, state.Score];
+    end
+
+    save(filename, 'poplog', '-v7.3');
+
+    optchanged = false;
+end
