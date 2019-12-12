@@ -27,7 +27,7 @@ SIM_TIME=150
 
 CPUS=$SLURM_CPUS_PER_TASK
 NAME="'$SLURM_JOB_NAME'"
-SLURMTIME=$((1 * 3 * 60 * 60)) # days x hours x minutes x seconds
+SLURMTIME=$((1 * 9000)) # days x hours x minutes x seconds
 
 ARGS="$SCRIPT $ALPHA_MIN $ALPHA_MAX $BETA_MIN $BETA_MAX $ETA_MIN $ETA_MAX $FGI_MIN $FGI_MAX $SIM_TIME $CPUS $NAME $SLURM_JOB_ID $NOTES $SLURMTIME"
 CARGS="${ARGS//[[:blank:]]/,}"
@@ -39,7 +39,7 @@ echo "-------------------------------------------------------- $SLURM_JOB_ID" >>
 echo $NOTES >> $JOBLOG
 echo $CARGS >> $JOBLOG
 
-srun matlab -nosplash -nodisplay -nodesktop -r "try, cd('experiments'); executebayes($CARGS), catch me, fprintf('%s / %s\n',me.identifier,me.message), end, exit" >> slurm-$SLURM_JOB_ID.out
+srun matlab -nosplash -nodisplay -nodesktop -r "try, cd('experiments'); executeoptim($CARGS), catch me, fprintf('%s / %s\n',me.identifier,me.message), end, exit" >> slurm-$SLURM_JOB_ID.out
 
 
 

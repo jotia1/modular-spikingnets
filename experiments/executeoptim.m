@@ -1,9 +1,6 @@
-function [] = executebayes(script, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, cpus, exp_name, exp_num, exp_notes, exp_secs)
+function [] = executeoptim(script, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, cpus, exp_name, exp_num, exp_notes, exp_secs)
     %% play with optimisation
     addpath(genpath('../'));
-
-    %% TEMP HACK
-    exp_name = num2str(exp_name)
 
     % Try stopping 30 mins early so running trials can end before getting slurmed
     exp_secs = exp_secs - (30 * 60);  % 30 minutes x 60 seconds
@@ -18,7 +15,7 @@ function [] = executebayes(script, alphamin, alphamax, betamin, betamax, etamin,
     elseif script == 2  %% SDVL Bayes
         result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
     elseif script == 3 % SSDVL GA
-        result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs)
+        result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
     else
         fprintf('ERROR: Got invalud script number: %d is not valid', script);
         return
@@ -35,10 +32,16 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
     fun = @(x) ssdvlnetwork(x, sim_time_sec);
     numvariables = 4; 
 
-    opts = optimoptions(@ga,'OutputFcn', @(options, state, flag) logpop(options, state, flag, foldername));
-    opts.PopulationSize = 12;
-    opts = optimoptions(opts,'MaxGenerations', 10, 'MaxStallGenerations', 7,...
+    opts = optimoptions(@ga, ...
+        'OutputFcn', @(options, state, flag) logpop(options, state, flag, foldername), ...
+        'PopulationSize', 12, ...
+        'MaxGenerations', 10, ...
+        'MaxStallGenerations', 7,...
         'MaxTime', exp_secs, ...
+        'FunctionTolerance', 1e-2, ...
+        'SelectionFcn', 'selectionstochunif', ...
+        'MutationFcn', 'mutationadaptfeasible', ...
+        'CrossoverFcn', 'crossoverscattered', ...
         'UseParallel',true);
 
     % Bounds:
