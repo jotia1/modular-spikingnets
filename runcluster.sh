@@ -1,40 +1,48 @@
 #! /bin/bash
 
-#SBATCH --job-name=grid
-#SBATCH --partition=coursework
+#SBATCH --job-name=timesd
+#SBATCH --partition=batch
 ##SBATCH --nodelist=r730-1
 #SBATCH --mail-type=end
 #SBATCH --mail-user=joshua.arnold1@uqconnect.edu.au
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=24
 
 # Learning Rule;
 #       SDVL
 #       SSDVL
-LEARNINGRULE="'SSDVL'"
+LEARNINGRULE="'SDVL'"
 
 # Task;
-#       JITTER
-#       FREQUENCY
-#       NUMAFFERENTS
-#       DROPOUT
-#       FGI
-#       GRID
-TASK="'GRID'"
-TASKSTART="1"
-TASKSTEP="1"
-TASKEND="625"
+#       JITTER          FREQUENCY
+#       NUMAFFERENTS    DROPOUT
+#       FGI             GRID
+#       TIME
+TASK="'TIME'"
+TASKSTART="150"
+TASKSTEP="75"
+TASKEND="450"
 
-NOTES="'Running actual experiments for paper, corrected variable names for drp and frq'"
+NOTES="'Test what impact simulation time has on network performance.'"
 
-ALPHA1=6
-ALPHA2=6
-BETA1=16
-BETA2=16
 FGI="0.0228"
 ETAMEAN="0.04"
-ETAVAR="0.04"
 SIMTIME=150
-REPEATS=3
+REPEATS=24
+
+if [ $LEARNINGRULE = "'SDVL'" ]
+then
+    ALPHA1=3
+    ALPHA2=5
+    BETA1=5
+    BETA2=5
+    ETAVAR="0.05"
+else
+    ALPHA1=6
+    ALPHA2=6
+    BETA1=16
+    BETA2=16
+    ETAVAR="0.04"
+fi
 
 CPUS=$SLURM_CPUS_PER_TASK
 NAME="'$SLURM_JOB_NAME'"

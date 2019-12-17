@@ -90,6 +90,8 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
                     net.a1 = alpha; net.a2 = alpha;
                     net.b1 = beta; net.b2 = beta;
                     net.nv = net.nu;
+                elseif strcmp(task, 'TIME')
+                    net.sim_time_sec = var;
                 else
                     fprintf('INVALID TASK: %s\n', task); 
                     assert false
