@@ -1,32 +1,45 @@
-function [] = executeoptim(script, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, cpus, exp_name, exp_num, exp_notes, exp_secs)
+function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, exp_notes, slurm_time)
     %% play with optimisation
     addpath(genpath('../'));
 
     % Try stopping 30 mins early so running trials can end before getting slurmed
-    exp_secs = exp_secs - (30 * 60);  % 30 minutes x 60 seconds
+    slurm_time = slurm_time - (30 * 60);  % 30 minutes x 60 seconds
     rng(1);
     SIM_TIME=sim_time_sec;
     parpool(cpus);
-    output_folder = newoutputfolder(exp_name);
+    output_folder = sprintf('%s_%d', exp_name, slurm_id); %newoutputfolder(exp_name);
     
+    if strcmp(task, 'BAYES')
+        if strcmp(learning_rule, 'SDVL')
+            result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        elseif stcmp(learning_rule, 'SSDVL')
+            result = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        else
+            fprintf('ERROR: Unrecognised learning_rule: %s\n', learning_rule);
+            return;
+        end
+    elseif strcmp(task, 'GENALGO')
+        if strcmp(learning_rule, 'SDVL')
+            fprintf('ERROR: Not yet implemented, %s for %s\n', task, learning_rule);
+        elseif stcmp(learning_rule, 'SSDVL')
+            result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
 
-    if script == 1 % SSDVL Bayes
-        result = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
-    elseif script == 2  %% SDVL Bayes
-        result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
-    elseif script == 3 % SSDVL GA
-        result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, exp_secs);
+        else
+            fprintf('ERROR: Unrecognised learning_rule: %s\n', learning_rule);
+            return;
+        end
     else
-        fprintf('ERROR: Got invalud script number: %d is not valid', script);
-        return
+        fprintf('ERROR: Unrecognised task: %s\n', task);
+        return;
     end
 
+
     filename = sprintf('%s/opt_%s_final', output_folder, exp_name);
-    save(filename, 'result', 'exp_num', 'exp_notes', '-v7.3');
+    save(filename, 'result', 'slurm_id', 'exp_notes', '-v7.3');
 
 end
 
-function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
+function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
     fprintf('start optimising with GA');
 
     fun = @(x) ssdvlnetwork(x, sim_time_sec);
@@ -37,7 +50,7 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
         'PopulationSize', 12, ...
         'MaxGenerations', 10, ...
         'MaxStallGenerations', 7,...
-        'MaxTime', exp_secs, ...
+        'MaxTime', slurm_time, ...
         'FunctionTolerance', 1e-2, ...
         'SelectionFcn', 'selectionstochunif', ...
         'MutationFcn', 'mutationadaptfeasible', ...
@@ -64,7 +77,7 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
 end
 
 
-function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
+function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
     fprintf('Start optimising ssdvl');
     fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
     nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
@@ -77,12 +90,12 @@ function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin,
         'AcquisitionFunctionName','expected-improvement-plus', ...
         'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
         'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
-        'MaxTime', exp_secs, ... 
+        'MaxTime', slurm_time, ... 
         'UseParallel',true);
 end
 
 
-function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, exp_secs)
+function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
     fprintf('Start optimising SDVL');
     fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
     nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
@@ -98,7 +111,7 @@ function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, 
         'AcquisitionFunctionName','expected-improvement-plus', ...
         'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
         'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
-        'MaxTime', exp_secs, ...
+        'MaxTime', slurm_time, ...
         'UseParallel',true);
 end
 
