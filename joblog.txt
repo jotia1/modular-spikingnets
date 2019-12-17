@@ -1,0 +1,120 @@
+-------------------------------------------------------- 285874
+'Hello world!'
+5,1,25,1,25,0.001,0.1,0,10,150,24,285874,32400
+-------------------------------------------------------- 285876
+'Hello world!'
+5,1,25,1,25,0.001,0.1,0,10,150,1,'Hello,world!',32400
+-------------------------------------------------------- 285877
+'This experiment was run because...'
+5,1,25,1,25,0.001,0.1,0,10,150,1,'sdvlbayes',285877,'This,experiment,was,run,because...',32400
+-------------------------------------------------------- 285881
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,1,'sdvlbayes',285881,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285882
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,1,'sdvlbayes',285882,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285883
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,1,'sdvlbayes',285883,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285885
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,10,'GAplot',285885,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285887
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,10,'GAplot',285887,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285895
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,10,'GAplot',285895,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285896
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,10,10,'GAplot',285896,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285897
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,10,10,'GAplot',285897,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285898
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,10,10,'GAplot',285898,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285899
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,10,10,'GAplot',285899,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',3600
+-------------------------------------------------------- 285900
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,150,10,'GAplot',285900,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',32400
+-------------------------------------------------------- 285901
+'Testing to see if we individuals in GA are consistent. Can we plot their paths'
+3,1,25,1,25,0.001,0.1,0,10,10,10,'GAplot',285901,'Testing,to,see,if,we,individuals,in,GA,are,consistent.,Can,we,plot,their,paths',32400
+-------------------------------------------------------- 285904
+'Do a reasonable GA run to see if logging population matters'
+3,1,25,1,25,0.001,0.1,0,10,150,12,'GAtrace',285904,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters',10800
+-------------------------------------------------------- 285905
+'Do a reasonable GA run to see if logging population matters'
+3,1,25,1,25,0.001,0.1,0,10,150,12,'GAtrace',285905,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters',10800
+-------------------------------------------------------- 285908
+'Do a reasonable GA run to see if logging population matters'
+3,1,25,1,25,0.001,0.1,0,10,150,12,'GAtrace',285908,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters',
+-------------------------------------------------------- 285909
+'Do a reasonable GA run to see if logging population matters'
+3,1,25,1,25,0.001,0.1,0,10,150,12,'GAtrace',285909,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters',9000
+-------------------------------------------------------- 285910
+'Do a reasonable GA run to see if logging population matters'
+3,1,25,1,25,0.001,0.1,0,10,150,12,'GAtrace',285910,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters',9000
+-------------------------------------------------------- 286345
+'Do a reasonable GA run to see if logging population matters'
+'ssdvlfgi',SSDVL,24,286345,'FGI',0.0224,0.0001,0.0229,3,5,5,5,0.0226,0.04,0.05,150,98,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters'
+-------------------------------------------------------- 286346
+'Do a reasonable GA run to see if logging population matters'
+'ssdvlfgi','SSDVL',24,286346,'FGI',0.0224,0.0001,0.0229,3,5,5,5,0.0226,0.04,0.05,150,98,'Do,a,reasonable,GA,run,to,see,if,logging,population,matters'
+-------------------------------------------------------- 286347
+'Doing a final ssdvl fgi sweep to pick an fgi before running tasks.'
+'ssdvlfgi','SSDVL',24,286347,'FGI',0.0224,0.0001,0.0229,3,5,5,5,0.0226,0.04,0.05,150,98,'Doing,a,final,ssdvl,fgi,sweep,to,pick,an,fgi,before,running,tasks.'
+-------------------------------------------------------- 286348
+'Doing a final ssdvl fgi sweep to pick an fgi before running tasks.'
+'ssdvlfgi1','SSDVL',24,286348,'FGI',0.0224,0.0001,0.0229,6,6,16,16,0.0226,0.04,0.05,150,48,'Doing,a,final,ssdvl,fgi,sweep,to,pick,an,fgi,before,running,tasks.'
+-------------------------------------------------------- 286364
+'Doing a final ssdvl fgi sweep to pick an fgi before running tasks.'
+'jitss','SSDVL',16,286364,'JITTER',0,2,26,6,6,16,16,0.0228,0.04,0.04,150,100,'Doing,a,final,ssdvl,fgi,sweep,to,pick,an,fgi,before,running,tasks.'
+-------------------------------------------------------- 286365
+'Doing a final ssdvl fgi sweep to pick an fgi before running tasks.'
+'frqss','SSDVL',16,286365,'FREQUENCY',1,1,10,6,6,16,16,0.0228,0.04,0.04,150,100,'Doing,a,final,ssdvl,fgi,sweep,to,pick,an,fgi,before,running,tasks.'
+-------------------------------------------------------- 286366
+'Doing a final ssdvl fgi sweep to pick an fgi before running tasks.'
+'nafss','SSDVL',16,286366,'NUMAFFERENTS',50,50,1000,6,6,16,16,0.0228,0.04,0.04,150,100,'Doing,a,final,ssdvl,fgi,sweep,to,pick,an,fgi,before,running,tasks.'
+-------------------------------------------------------- 286367
+'Running actual experiments for paper'
+'nafss','SSDVL',16,286367,'DROPOUT',0.0,0.1,1.0,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286368
+'Running actual experiments for paper'
+'drpss','SSDVL',16,286368,'DROPOUT',0.0,0.1,1.0,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286369
+'Running actual experiments for paper'
+'fgiss','SSDVL',24,286369,'FGI',0.0220,0.0001,0.0234,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286398
+'Running actual experiments for paper'
+'fgisd','SDVL',24,286398,'FGI',0.0220,0.0001,0.0234,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286400
+'Running actual experiments for paper'
+'jitsd','SDVL',16,286400,'JITTER',0,2,26,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286401
+'Running actual experiments for paper'
+'nafsd','SDVL',16,286401,'NUMAFFERENTS',50,50,1000,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper'
+-------------------------------------------------------- 286423
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'drpss','SSDVL',16,286423,'DROPOUT',0.0,0.1,1.0,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286424
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'jitss','SSDVL',16,286424,'JITTER',0,2,26,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286425
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'frqss','SSDVL',16,286425,'FREQUENCY',1,1,10,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286427
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'nafss','SSDVL',16,286427,'NUMAFFERENTS',50,50,1000,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286433
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'fgisd','SDVL',24,286433,'FGI',0.0220,0.0001,0.0234,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286434
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'fgiss','SSDVL',24,286434,'FGI',0.0220,0.0001,0.0234,6,6,16,16,0.0228,0.04,0.04,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286439
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'grid','SSDVL',3,286439,'GRID',1,1,3,6,6,16,16,0.0228,0.04,0.04,150,3,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'

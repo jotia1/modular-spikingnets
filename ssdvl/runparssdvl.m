@@ -2,15 +2,47 @@
 %   Same as runparexp but for ssdvl
 
 addpath(genpath('../'));
-parpool(24); 
+parpool(16); 
 
-duplicate_num = 2;
-num_repeats = 24;
+duplicate_num = 3;
+num_repeats = 16;
 
-exp_name = sprintf('ssdvlgrid', duplicate_num);
+
+%%    GENERATE PETE DIAGONAL
+%final_list = [];
+%for betas = 17 : 40
+%    for alphas = 1 : 13
+%        alpha = betas + alphas - 7;
+%        ind = sub2ind([46, 46], alpha, beta);
+%        final_list(end + 1) = ind;
+%    end
+%end
+
+
+%%     GENERATE TOP RIGHT
+final_list = [];
+for beta = 25 : -1 : 1;
+    for alpha = 1 : beta
+        %[alpha, beta]
+        final_list = [final_list, sub2ind([25, 25], alpha, beta)];
+    end
+end
+
+%%%    GENERATE BOT LEFT
+%final_list = [];                                                                
+%for beta = 20 : -1 : 17;                                                        
+%    for alpha = 1 : beta                                                        
+%        %[alpha, beta]                                                          
+%        final_list = [final_list, sub2ind([25, 25], alpha, beta)];              
+%    end                                                                         
+%end 
+
+
+exp_name = sprintf('ssgridhalf', duplicate_num);
+notes = 'Rerun grid with fgi set to 0.0228, net not being reinitialised error fixed, tpxtn as default and last 50 sec frozen for evaluation.';
 output_folder = newoutputfolder(exp_name);
-grid_size = 16;
-var_range = 1 : 1 : grid_size * grid_size;
+grid_size = 25;
+var_range = final_list; %1 : 1 : grid_size * grid_size;
 num_range = numel(var_range);
 values = zeros(num_range, num_repeats);
 pocs = zeros(num_range, num_repeats);
@@ -21,60 +53,47 @@ tpxtn = zeros(num_range, num_repeats);
 
 
 parfor repeat = 1 : num_repeats
-    
-    net = defaultpapernetwork();
-
-    %% Parameters
-    net.run_date = datestr(datetime);
-    net.sim_time_sec = 150;
-    net.test_seconds = 50;
-    net.var_range = var_range;
-
-    net.Tp = 50;
-    net.Df = 10;
-    net.num_repeats = num_repeats;
-    net.Np = 500;
-    net.Pf = 5;
-    net.fgi = 0.0226;
-    net.dropout = 0.0;
-    N_inp = net.group_sizes(1);
-    net.output_folder = output_folder;
-
-
-    %% Simulated annealing params
-    net.use_simulated_annealing = false;
-    net.If = 0.0222;
-    net.Tf = 30;
 
     for count = 1 : num_range
 	    try
+            net = defaultpapernetwork();
+
+            %% Parameters
+            net.run_date = datestr(datetime);
+            net.sim_time_sec = 150;
+            net.test_seconds = 50;
+            net.var_range = var_range;
+
+            net.Tp = 50;
+            net.Df = 10;
+            net.num_repeats = num_repeats;
+            net.Np = 500;
+            net.Pf = 5;
+            net.fgi = 0.0228;
+            net.dropout = 0.0;
+            N_inp = net.group_sizes(1);
+            net.output_folder = output_folder;
+
+
+            %% Simulated annealing params
+            net.use_simulated_annealing = false;
+            net.If = 0.0222;
+            net.Tf = 30;
             tvar = net.var_range(count);
-            %var = tvar / floor((tvar - 1) / grid_size) + 1;
-            %beta = mod(tvar, grid_size);
-            [var, beta] = ind2sub([grid_size, grid_size], tvar);
+            [alpha, beta] = ind2sub([grid_size, grid_size], tvar);
 
             net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
             rng(net.preset_seed);
             net.rand_seed = -1;  % don't set inside simulator.
 
             % Set experiment variable
-            %net.Pf = var;
-            %net.dropout = var;
-            %net.Np = var;  % Num aff
-            %net.jit = var;
-            %net.fgi = var;
-            net.a1 = var;   % Alpha is repeat
+            net.a1 = alpha; 
             net.a2 = net.a1;
-            net.b1 = beta;       % Beta is var
+            net.b1 = beta; 
             net.b2 = net.b1;
             net.nu = net.nv;
 
             net.pattfun = [];
-            %pvariances = rand(1, net.Np) * net.pvar_max;
-            %net.pattfun = @(pinp, pts) mixedvariancefunc(pinp, pts, pvariances);
-            %net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
-            %net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
-
             [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
             net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
             net.repeat = repeat;
@@ -84,14 +103,14 @@ parfor repeat = 1 : num_repeats
             out = ssdvl(net);
 
             %value = detectionrate(net, out)
-            value = percentoffsetscorrect(net, out);
+            value = trueposxtrueneg(net, out);
             
             %  LOG multiple metrics.
-            pocs(count, repeat) = value;
+            tpxtn(count, repeat) = value;
+            pocs(count, repeat) = percentoffsetscorrect(net, out);
             css(count, repeat) = correctspikes(net, out);
             nmos(count, repeat) = missedoffsets(net, out);
             iss(count, repeat) = incorrectspikes(net, out);
-            tpxtn(count, repeat) = trueposxtrueneg(net, out);
             out.accuracy = value;
 
             values(count, repeat) = value;

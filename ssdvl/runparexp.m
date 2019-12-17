@@ -7,21 +7,21 @@ addpath(genpath('../'));
 parpool(24); 
 
 duplicate_num = 1;
-num_repeats = 100;
+num_repeats = 24;
 
 %   duplicate number,
 %   parpool, var_range
 %   patt_fun, ??? = var
 %   exp_name
 
-exp_name = sprintf('ssdvlnaf', duplicate_num);
+exp_name = sprintf('ss450fgi', duplicate_num);
 output_folder = newoutputfolder(exp_name);
 %var_range = [0 : 2 : 20];
 %var_range = [1 , 25 : 25 : 250]
-var_range = [100 : 100 : 1000];
+%var_range = [100 : 100 : 1000];
 %var_range = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 %var_range = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-%var_range = [0.0222 : 0.0001  : 0.0238];
+var_range = [0.0222 : 0.0002  : 0.0230];
 %var_range = [150, 250, 350, 450];
 num_range = numel(var_range);
 values = zeros(num_range, num_repeats);
@@ -33,39 +33,39 @@ tpxtn = zeros(num_range, num_repeats);
 
 
 parfor repeat = 1 : num_repeats
-    
-    net = defaultpapernetwork();
-
-    %% Parameters
-    net.run_date = datestr(datetime);
-    net.sim_time_sec = 150;
-    net.test_seconds = 50;
-    net.var_range = var_range;
-    
-    net.Tp = 50;
-    net.Df = 10;
-    net.num_repeats = num_repeats;
-    net.Np = 500;
-    net.Pf = 5;
-    net.fgi = 0.0226;
-    net.dropout = 0.0;
-    N_inp = net.group_sizes(1);
-    net.output_folder = output_folder;
-
-    
-    %% Simulated annealing params
-    net.use_simulated_annealing = false;
-    net.If = 0.0222;
-    net.Tf = 30;
-
-    %% SSDVL stuff
-    net.a1 = 9;
-    net.a2 = net.a1;
-    net.b1 = 9;
-    net.b2 = net.b1;
-    net.nu = net.nv;
-    
     for count = 1 : num_range
+    
+        net = defaultpapernetwork();
+
+        %% Parameters
+        net.run_date = datestr(datetime);
+        net.sim_time_sec = 450;
+        net.test_seconds = 50;
+        net.var_range = var_range;
+        
+        net.Tp = 50;
+        net.Df = 10;
+        net.num_repeats = num_repeats;
+        net.Np = 500;
+        net.Pf = 5;
+        net.fgi = 0.0226;
+        net.dropout = 0.0;
+        N_inp = net.group_sizes(1);
+        net.output_folder = output_folder;
+
+        
+        %% Simulated annealing params
+        net.use_simulated_annealing = false;
+        net.If = 0.0222;
+        net.Tf = 30;
+
+        %% SSDVL stuff
+        net.a1 = 6;
+        net.a2 = net.a1;
+        net.b1 = 16;
+        net.b2 = net.b1;
+        net.nu = net.nv;
+    
         var = net.var_range(count);
 
         net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
@@ -75,9 +75,9 @@ parfor repeat = 1 : num_repeats
         % Set experiment variable
         %net.Pf = var;
         %net.dropout = var;
-        net.Np = var;  % Num aff
+        %net.Np = var;  % Num aff
         %net.jit = var;
-        %net.fgi = var;
+        net.fgi = var;
         %net.sim_time_sec = var;
 
         net.pattfun = [];
@@ -94,14 +94,15 @@ parfor repeat = 1 : num_repeats
         out = ssdvl(net);
 
         %value = detectionrate(net, out)
-        value = percentoffsetscorrect(net, out);
+        %value = percentoffsetscorrect(net, out);
+        value = trueposxtrueneg(net, out);
         
         %  LOG multiple metrics.
-        pocs(count, repeat) = value;
+        pocs(count, repeat) = percentoffsetscorrect(net, out);
         css(count, repeat) = correctspikes(net, out);
         nmos(count, repeat) = missedoffsets(net, out);
         iss(count, repeat) = incorrectspikes(net, out);
-        tpxtn(count, repeat) = trueposxtrueneg(net, out);
+        tpxtn(count, repeat) = value;
 
         out.accuracy = value;
         

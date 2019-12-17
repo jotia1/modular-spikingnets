@@ -311,7 +311,7 @@ for sec = 1 : net.sim_time_sec
     
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace];
     out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
-    if mod(sec, 2) == 0 && net.print_progress
+    if mod(sec, 10) == 0 && net.print_progress
         fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec);
         % Can do optional plotting here later
     end
