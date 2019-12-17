@@ -118,3 +118,21 @@
 -------------------------------------------------------- 286439
 'Running actual experiments for paper, corrected variable names for drp and frq'
 'grid','SSDVL',3,286439,'GRID',1,1,3,6,6,16,16,0.0228,0.04,0.04,150,3,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286448
+'Test optimisation algorithms.'
+'GAss','SSDVL',3,286448,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',9000
+-------------------------------------------------------- 286449
+'Test optimisation algorithms.'
+'GAss','SSDVL',3,286449,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',9000
+-------------------------------------------------------- 286450
+'Test optimisation algorithms.'
+'GAss','SSDVL',3,286450,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',9000
+-------------------------------------------------------- 286457
+'Test optimisation algorithms.'
+'GAss','SSDVL',3,286457,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',9000
+-------------------------------------------------------- 286458
+'Test optimisation algorithms.'
+'BOsd','SDVL',3,286458,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',9000
+-------------------------------------------------------- 286459
+'Test optimisation algorithms.'
+'BOsd','SDVL',12,286459,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400

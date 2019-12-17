@@ -8,26 +8,12 @@ function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alpham
     SIM_TIME=sim_time_sec;
     parpool(cpus);
     output_folder = sprintf('%s_%d', exp_name, slurm_id); %newoutputfolder(exp_name);
+    mkdir(output_folder);
     
     if strcmp(task, 'BAYES')
-        if strcmp(learning_rule, 'SDVL')
-            result = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
-        elseif stcmp(learning_rule, 'SSDVL')
-            result = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
-        else
-            fprintf('ERROR: Unrecognised learning_rule: %s\n', learning_rule);
-            return;
-        end
+        result = runbayes(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
     elseif strcmp(task, 'GENALGO')
-        if strcmp(learning_rule, 'SDVL')
-            fprintf('ERROR: Not yet implemented, %s for %s\n', task, learning_rule);
-        elseif stcmp(learning_rule, 'SSDVL')
-            result = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
-
-        else
-            fprintf('ERROR: Unrecognised learning_rule: %s\n', learning_rule);
-            return;
-        end
+        result = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
     else
         fprintf('ERROR: Unrecognised task: %s\n', task);
         return;
@@ -39,29 +25,39 @@ function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alpham
 
 end
 
-function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
-    fprintf('start optimising with GA');
+function [results] = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
+    fprintf('Start optimising %s with GA\n', learning_rule);
 
-    fun = @(x) ssdvlnetwork(x, sim_time_sec);
-    numvariables = 4; 
+    if strcmp(learning_rule, 'SSDVL')
+        lb = [alphamin, betamin, etamin, fgimin];
+        ub = [alphamax, betamax, etamax, fgimax];
+        fun = @(x) ssdvlnetwork(x, sim_time_sec);
+    elseif strcmp(learning_rule, 'SDVL')
+        lb = [alphamin, alphamin, betamin, betamin, etamin, etamin, fgimin];
+        ub = [alphamax, alphamax, betamax, betamax, etamax, etamax, fgimax];
+        fun = @(x) sdvlnetwork(x, sim_time_sec);
+    else
+        fprintf('ERROR: runga - Unknown learning rule: %s\n', learning_rule);
+        return;
+    end
+        
+    numvariables = numel(lb); 
+    popsize = 12;
 
     opts = optimoptions(@ga, ...
         'OutputFcn', @(options, state, flag) logpop(options, state, flag, foldername), ...
-        'PopulationSize', 12, ...
+        'PopulationSize', popsize, ...
         'MaxGenerations', 10, ...
         'MaxStallGenerations', 7,...
         'MaxTime', slurm_time, ...
         'FunctionTolerance', 1e-2, ...
+        'FitnessScalingFcn', 'fitscalingrank', ...
         'SelectionFcn', 'selectionstochunif', ...
+        'EliteCount', ceil(0.05 * popsize), ...
         'MutationFcn', 'mutationadaptfeasible', ...
+        'CrossoverFraction', 0.8, ...
         'CrossoverFcn', 'crossoverscattered', ...
         'UseParallel',true);
-
-    % Bounds:
-    lb = [alphamin, betamin, etamin, fgimin];
-    ub = [alphamax, betamax, etamax, fgimax];
-    %lb = [1; 0.1; 0.1; 1; 1; 1; 1; 1; 1];
-    %ub = [10; 0.5; 0.5; 9; 9; 9; 9; 10; Inf];
 
     [x,Fval,exitFlag,Output,population,scores] = ga(fun, numvariables, [],[],[],[], lb, ub,[],opts);
 
@@ -77,39 +73,39 @@ function [results] = gassdvl(alphamin, alphamax, betamin, betamax, etamin, etama
 end
 
 
-function [results] = optimisessdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
-    fprintf('Start optimising ssdvl');
-    fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
-    nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
-    a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
-    b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
-    savefilename = sprintf('%s/prog.mat', foldername);
+function [results] = runbayes(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
+    if strcmp(learning_rule, 'SSDVL')
 
-    fun = @(x) ssdvlnetwork(x, sim_time_sec);
-    results = bayesopt(fun, [fgivar, a1var, b1var, nuvar],'Verbose',1,...
+        fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
+        nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
+        a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
+        b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
+        opt_vars = [fgivar, a1var, b1var, nuvar];
+        fun = @(x) ssdvlnetwork(x, sim_time_sec);
+
+    elseif strcmp(learning_rule, 'SDVL')
+
+        fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
+        nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
+        nvvar = optimizableVariable('nv', [etamin, etamax], 'Type', 'real');
+        a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
+        a2var = optimizableVariable('a2', [alphamin, alphamax], 'Type', 'integer');
+        b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
+        b2var = optimizableVariable('b2', [betamin, betamax], 'Type', 'integer');
+        opt_vars = [fgivar, a1var, a2var, b1var, b2var, nuvar, nvvar];
+        fun = @(x) sdvlnetwork(x, sim_time_sec);
+
+    else
+        fprintf('ERROR: runbayes - Unknown learning rule: %s\n', learning_rule);
+        return;
+    end
+
+    fprintf('Start optimising %s with BAYES\n', learning_rule);
+
+    savefilename = sprintf('%s/progress.mat', foldername);
+    results = bayesopt(fun, opt_vars, 'Verbose', 2,...
         'AcquisitionFunctionName','expected-improvement-plus', ...
-        'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
-        'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
-        'MaxTime', slurm_time, ... 
-        'UseParallel',true);
-end
-
-
-function [results] = optimisesdvl(alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
-    fprintf('Start optimising SDVL');
-    fgivar = optimizableVariable('fgi', [fgimin, fgimax], 'Type', 'integer');
-    nuvar = optimizableVariable('nu', [etamin, etamax], 'Type', 'real');
-    nvvar = optimizableVariable('nv', [etamin, etamax], 'Type', 'real');
-    a1var = optimizableVariable('a1', [alphamin, alphamax], 'Type', 'integer');
-    a2var = optimizableVariable('a2', [alphamin, alphamax], 'Type', 'integer');
-    b1var = optimizableVariable('b1', [betamin, betamax], 'Type', 'integer');
-    b2var = optimizableVariable('b2', [betamin, betamax], 'Type', 'integer');
-    savefilename = sprintf('%s/prog.mat', foldername);
-
-    fun = @(x) sdvlnetwork(x, sim_time_sec);
-    results = bayesopt(fun, [fgivar, a1var, a2var, b1var, b2var, nuvar, nvvar],'Verbose',1,...
-        'AcquisitionFunctionName','expected-improvement-plus', ...
-        'NumSeedPoints', 100, 'MaxObjectiveEvaluations',1000, ...
+        'NumSeedPoints', 10, 'MaxObjectiveEvaluations',100, ...
         'SaveFileName', savefilename, 'OutputFcn', @saveToFile, ...
         'MaxTime', slurm_time, ...
         'UseParallel',true);
@@ -248,6 +244,10 @@ function [state, options, optchanged] = logpop(options, state, flag, outfolder)
     end
 
     save(filename, 'poplog', '-v7.3');
+
+    % Also force re-evaluation of elites and stop duplicates in population
+    state.EvalElites = True;
+    state.HaveDuplicates = False;
 
     optchanged = false;
 end
