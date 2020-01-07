@@ -95,7 +95,7 @@ if net.print_progress
 end
 
 for sec = 1 : net.sim_time_sec
-    out.timing_info.sim_sec_times(sec) = tic;
+    out.timing_info.sim_sec_tics(sec) = tic;
     spike_time_trace = [];
     
     if isa(net.data_generator,'function_handle')
@@ -310,15 +310,15 @@ for sec = 1 : net.sim_time_sec
     end  % of ms for loop
     
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace];
-    out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_times(sec));
+    out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_tics(sec));
     if mod(sec, 10) == 0 && net.print_progress
-        fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec);
+        fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_tics(1))/sec);
         % Can do optional plotting here later
     end
 end    % of seconds for loop
 
 if net.print_progress
-    fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss + %.3f seconds of intialisation\n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_times(1))/sec, out.timing_info.init_toc);
+    fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss + %.3f seconds of intialisation\n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_tics(1))/sec, out.timing_info.init_toc);
 end
 
 out.vt = vt;
