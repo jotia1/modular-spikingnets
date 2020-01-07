@@ -17,6 +17,15 @@ end
 ms_per_sec = 1000;
 sim_time_ms = net.sim_time_sec * ms_per_sec;
 
+% Sanity check learning rule
+if strcmp(net.learning_rule, 'SSDVL')
+    assert(net.a2 == 1, sprintf('SSDVL defines a2 as 1. a2 has value:%d', net.a2)
+    assert(net.nu == net.nv, 'Values for nu and nv differ, should be equal for SSDVL');
+    assert(net.b1 == net.b2, 'Values for b1 and b1 should be equal for SSDVL');
+else
+    assert(strcmp(net.learning_rule, 'SDVL'), 'Learning rule unknown: %s', net.learning_rule);
+end
+
 % SDVL variables
 delays = net.delays;
 delayst = zeros(numel(net.delays_to_save), net.N, sim_time_ms);
@@ -229,43 +238,54 @@ for sec = 1 : net.sim_time_sec
             v(net.lateral_inhibition) = net.v_reset;         
         end
         
-        %% STDP
-        % Any pre-synaptics weights should be increased
-        w(:, fired) = w(:, fired) + (repmat(dApost(fired), 2001, 1) .* conns(:, fired));
-        % Any post synaptic weights decrease
-        w(fired, :) = w(fired, :) + (repmat(dApre(fired), 1, 2001) .* conns(fired, :));
-        dApost(fired) = dApost(fired) + net.Apost;
-        dApre(fired) = dApre(fired) + net.Apre;
-        
-        % STDP decay
-        dApre = dApre * STDPdecaypre;
-        dApost = dApost * STDPdecaypost;
+        % if training
+        if sec < (net.sim_time_sec - net.test_seconds)
+
+            %% STDP
+            % Any pre-synaptics weights should be increased
+            w(:, fired) = w(:, fired) + (repmat(dApost(fired), net.N, 1) .* conns(:, fired));
+            % Any post synaptic weights decrease
+            w(fired, :) = w(fired, :) + (repmat(dApre(fired), 1, net.N) .* conns(fired, :));
+            dApost(fired) = dApost(fired) + net.Apost;
+            dApre(fired) = dApre(fired) + net.Apre;
+            
+            % STDP decay
+            dApre = dApre * STDPdecaypre;
+            dApost = dApost * STDPdecaypost;
+        end
         
         %% TIMER
         out.timing_info.profiling_tocs(6, time) = toc(ms_tic);
         
-        %% SDVL
-        t0 = repmat(time - last_spike_time, 1, numel(fired));
-        t0_negu = t0 - delays(:, fired);
-        abst0_negu = abs(t0_negu);
-        k = (variance(:, fired) + 0.9) .^2;
-        shifts = sign(t0_negu) .* k .* net.nu;
-        
-        % Update SDVL mean
-        du = zeros(size(t0_negu));
-        du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
-        du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
+        % if training
+        if sec < (net.sim_time_sec - net.test_seconds)
+            %% SDVL
+            t0 = repmat(time - last_spike_time, 1, numel(fired));
+            t0_negu = t0 - delays(:, fired);
+            abst0_negu = abs(t0_negu);
+            k = (variance(:, fired) + 0.9) .^2;
+            shifts = sign(t0_negu) .* k .* net.nu;
+            
+            % Update SDVL mean
+            du = zeros(size(t0_negu));
+            du(t0 >= net.a2) = -k(t0 >= net.a2) .* net.nu;
+            du(abst0_negu >= net.a1) = shifts(abst0_negu >= net.a1);
 
-        delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
-        delays(conns) = max(1, min(net.delay_max, delays(conns)));
+            delays(:, fired) = delays(:, fired) + (du .* conns(:, fired));
+            delays(conns) = max(1, min(net.delay_max, delays(conns)));
 
-        % Update SDVL variance
-        dvar = zeros(size(t0_negu));
-        dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
-        dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
+            % Update SDVL variance
+            if strcmp(net.learning_rule, 'SSDVL')
+                dvar = (ones(size(t0_negu)) .* -k) .* net.nv; 
+            else % if SDVL
+                dvar = zeros(size(t0_negu));
+                dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
+            end
+            dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
 
-        variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
-        variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
+            variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
+            variance(conns) = max(net.variance_min, min(net.variance_max, variance(conns)));
+        end
         
         %% TIMER
         out.timing_info.profiling_tocs(7, time) = toc(ms_tic); 
@@ -299,7 +319,7 @@ for sec = 1 : net.sim_time_sec
     
     out.spike_time_trace = [out.spike_time_trace; spike_time_trace];
     out.timing_info.full_sec_tocs(sec) = toc(out.timing_info.sim_sec_tics(sec));
-    if mod(sec, 2) == 0 && net.print_progress
+    if mod(sec, 10) == 0 && net.print_progress
         fprintf('Sim sec: %d, Total real: %.3f, %.3f sec/ss \n', sec, toc(out.timing_info.init_time), toc(out.timing_info.sim_sec_tics(1))/sec);
         % Can do optional plotting here later
     end
@@ -322,38 +342,6 @@ out.debug = debug;
 end
 
 
-
-function [ p ] = fixedintegrals(net, vars, sample_starts)
-    % This method was updated and then deprecated for the much faster
-    % look up table for getting integrals.
-    assert(false, 'deprecated');
-    %% Fixed Integrals: Update peak values for any that fired
-    p = net.fgi ./ sqrt(2 * pi * vars);  
-    epsilon = 0.1;
-    do = true;
-    small_peaks = 0;
-    big_peaks = 0;
-    while do
-        p = p + (0.005 .* small_peaks);
-        full_integral = zeros(size(sample_starts));      
-        p = p - (0.005 .* big_peaks);     % Also do bigs
-        
-        for j = 1 : 40
-            % Note: Converting exp( ... ) to a large constant matrix may be
-            % faster than looping. (esp. twice...)
-            step_integral = p .* exp(- ((sample_starts + j) .^ 2) ./ (2 * vars));
-            full_integral = full_integral + step_integral;
-        end
-        small_peaks = full_integral < (net.fgi - epsilon);
-        big_peaks = full_integral > (net.fgi + epsilon);
-        do = any(small_peaks(:)) | any(big_peaks(:));
-    end
-    p(isinf(p)) = 0;
-
-end
-
-
-
 function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi)
 %% BUILDLOOKUPTABLE - Table for postsynaptic currents for given delay and variance
 %   Build a 3D table, where rows are a range of variances, columns are a
@@ -374,6 +362,8 @@ function [ ptable ] = buildlookuptable(var_range, delays_range, steps_range, fgi
         load(ptable_filename, 'ptable');
         fprintf('Loading ptable: %s\n', ptable_filename);
         return
+    else
+        fprintf('Creating ptable: %s\n', ptable_filename);
     end
 
     steps = repmat(reshape(steps_range, 1, 1, []), numel(var_range), numel(delays_range), 1);

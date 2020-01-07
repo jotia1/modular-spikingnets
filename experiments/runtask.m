@@ -39,7 +39,7 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
             net.sim_time_sec = sim_time_secs;
             net.test_seconds = 50;
             net.var_range = var_range;
-
+            net.learning_rule = learning_rule;
             
             net.Tp = 50;
             net.Df = 10;
@@ -50,7 +50,6 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
             net.dropout = 0.0;
             N_inp = net.group_sizes(1);
             net.output_folder = output_folder;
-
             
             %% Simulated annealing params
             net.use_simulated_annealing = false;
@@ -102,16 +101,9 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
                 net.repeat = repeat;
                 net.count = count;
 
-                if strcmp(learning_rule, 'SDVL')
-                    out = spikingnet(net);
-                elseif strcmp(learning_rule, 'SSDVL');
-                    net.a2 = net.a1;
-                    net.b2 = net.b1;
-                net.nu = net.nv
-                out = ssdvl(net);
-                else
-                    fprintf('INVALID LEARNING RULE: %s\n', learning_rule);
-                end
+
+                out = spikingnet(net);
+
 
                 value = trueposxtrueneg(net, out);
                 out.accuracy = value;
