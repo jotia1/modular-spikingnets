@@ -246,8 +246,8 @@ function [state, options, optchanged] = logpop(options, state, flag, outfolder)
     save(filename, 'poplog', '-v7.3');
 
     % Also force re-evaluation of elites and stop duplicates in population
-    state.EvalElites = True;
-    state.HaveDuplicates = False;
+    state.EvalElites = true;
+    state.HaveDuplicates = false;
 
     optchanged = false;
 end
