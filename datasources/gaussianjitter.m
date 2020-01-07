@@ -11,6 +11,9 @@ function [inp , ts ] = gaussianjitter(inp, ts, jitter)
 %       [inp , ts ] = gaussianjitter(inp, ts, 1)
 
 % TODO : Hardcoded wrap around 50ms pattern
-ts = mod(ts + round(randn(size(ts)) .* jitter), 50);
+% Need to subtract 1 then do wrapping, then add one to account for non-zero
+% indexing of matlab and now event streams - Otherwise 50ms wraps round to
+% 0 ms. (which is bad, should wrap from 51 to 1).
+ts = mod(ts + round(randn(size(ts)) .* jitter) - 1, 50) + 1;
 
 end

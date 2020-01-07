@@ -75,6 +75,7 @@ for i = selected_slots
     ts(filter) = [];
     inp(filter) = [];
 
+    % Generate distractor spikes simultaneous to pattern
     offsetpoiss = poissrnd(exp_N_dist_spikes_Tp);
     offset_inp = randi([Np + 1, N_inp], 1, offsetpoiss);
     offset_ts = randi([1, Tp], 1, offsetpoiss);
