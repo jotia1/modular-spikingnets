@@ -1,5 +1,9 @@
 %%
-figure('position', [2440, 40, 640, 480]);
+if ~exist('cols', 'var')
+    cols = size(values, 2);
+end
+
+figh = figure('position', [2440, 40, 640, 480]);
 plot(var_range, values(:, 1:cols), 'xk');
 hold on
 p1 = plot(var_range, mean(values(:, 1:cols), 2), '-.', 'DisplayName','Mean');

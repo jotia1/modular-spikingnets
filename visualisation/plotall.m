@@ -10,7 +10,7 @@ function [ ] = plotall(net, out, plot_lines)
 % TODO : Hardcoded...
 Tp = 50;
 
-figure;
+figure('name', net.output_folder);
 tg = uitabgroup;
 
 %% Create raster plot
@@ -48,5 +48,9 @@ if numel(net.iapp_to_save) > 0
     plot(out.iappt', 'k')
 end
 
+%% Show response time plot
+vdrstab = uitab(tg, 'Title', 'resp. time');
+axes('Parent', vdrstab);
+plotresponsetimes(net, out)
 
 end

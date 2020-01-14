@@ -19,10 +19,17 @@ end
 subplot(2, 1, 1);
 if asraster
     plot(out.delays(:, net.N), '.');
+    hold on
+    for colour = 1 : 10  %Colour code to spike time
+        idxs = find(net.pts == colour);
+        plot(idxs, out.delays(idxs, net.N), 'o');
+    end   
+    hold off
 else
     plottrace(out.delayst, neurons);
 end
 title('Delays');
+axis([0 2000 0 20]);
 
 subplot(2, 1, 2);
 if asraster
@@ -31,6 +38,7 @@ else
     plottrace(out.vart, neurons);
 end
 title('Variance');
+axis([0 2000 0 10]);
 
 
 end
