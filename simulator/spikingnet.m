@@ -19,8 +19,8 @@ sim_time_ms = net.sim_time_sec * ms_per_sec;
 
 % Sanity check learning rule
 if strcmp(net.learning_rule, 'SSDVL')
-    assert(net.a2 == 1, sprintf('SSDVL defines a2 as 1. a2 has value:%d', net.a2)
-    assert(net.nu == net.nv, 'Values for nu and nv differ, should be equal for SSDVL');
+    %assert(net.a2 == net.delay_max, sprintf('SSDVL defines a2 as 1. a2 has value:%d', net.a2));
+    %assert(net.nu == net.nv, 'Values for nu and nv differ, should be equal for SSDVL');
     assert(net.b1 == net.b2, 'Values for b1 and b1 should be equal for SSDVL');
 else
     assert(strcmp(net.learning_rule, 'SDVL'), 'Learning rule unknown: %s', net.learning_rule);
@@ -48,6 +48,7 @@ upcur_idx = 1;
 
 % Dynamic threshold parameters
 v_thres = ones(size(v)) * net.v_thres;
+dv_thres = zeros(size(v));
 net.thres_rise = net.thres_rise * net.dynamic_threshold; % zero if false
 
 % Izhikevich params
@@ -227,7 +228,8 @@ for sec = 1 : net.sim_time_sec
         upcoming_current(:, 1 : upcur_idx - 1) = upcoming_current(:, 1 : upcur_idx - 1) + weighted_gauss_samples(:, idx_diff + 1 : end);
    
         v(fired) = net.v_reset;
-        v_thres(fired) = v_thres(fired) + net.thres_rise;
+        %v_thres(fired) = v_thres(fired) + net.thres_rise;
+        dv_thres(fired) = dv_thres(fired) + 1;
         %debug = [debug; v_thres'];
         
         %% TIMER
@@ -294,7 +296,11 @@ for sec = 1 : net.sim_time_sec
         out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
     
         %% Intrinsic plasticity threshold decay
-        v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
+        %v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
+        dv_thres = min(dv_thres, 1);  % Bound to no larger than 1
+        v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr .* dv_thres(N_inp + 1 : end));
+        dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (net.thres_freq / ms_per_sec);
+        dv_thres = max(dv_thres, -1);   % Bound to -1 minimum
         v_threst(:, time) = v_thres(net.v_thres_to_save)';
         
         %% Synaptic bounding - limit w to [0, w_max]
