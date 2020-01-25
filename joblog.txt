@@ -136,3 +136,309 @@
 -------------------------------------------------------- 286459
 'Test optimisation algorithms.'
 'BOsd','SDVL',12,286459,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286446
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'timess','SSDVL',24,286446,'TIME',150,75,450,6,6,16,16,0.0228,0.04,0.04,150,24,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286428
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'nafsd','SDVL',16,286428,'NUMAFFERENTS',50,50,1000,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286447
+'Test what impact simulation time has on network performance.'
+'timesd','SDVL',24,286447,'TIME',150,75,450,3,5,5,5,0.0228,0.04,0.05,150,24,'Test,what,impact,simulation,time,has,on,network,performance.'
+-------------------------------------------------------- 286469
+'Test optimisation algorithms.'
+'GAsd','SDVL',12,286469,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286470
+'Test optimisation algorithms.'
+'BOss','SSDVL',12,286470,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286429
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'drpsd','SDVL',16,286429,'DROPOUT',0.0,0.1,1.0,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286482
+'Test optimisation algorithms.'
+'GAsd','SDVL',12,286482,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286485
+'Test optimisation algorithms.'
+'BOsd','SDVL',12,286485,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286487
+'Test optimisation algorithms.'
+'BOss','SSDVL',12,286487,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286483
+'Test optimisation algorithms.'
+'GAss','SSDVL',12,286483,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Test,optimisation,algorithms.',86400
+-------------------------------------------------------- 286430
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'frqsd','SDVL',16,286430,'FREQUENCY',1,1,10,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286431
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'jitsd','SDVL',16,286431,'JITTER',0,2,26,3,5,5,5,0.0228,0.04,0.05,150,100,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286435
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'grid','SSDVL',16,286435,'GRID',1,1,625,6,6,16,16,0.0228,0.04,0.04,150,25,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286436
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'grid','SSDVL',16,286436,'GRID',1,1,625,6,6,16,16,0.0228,0.04,0.04,150,25,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286437
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'grid','SSDVL',16,286437,'GRID',1,1,625,6,6,16,16,0.0228,0.04,0.04,150,25,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 286438
+'Running actual experiments for paper, corrected variable names for drp and frq'
+'grid','SSDVL',16,286438,'GRID',1,1,625,6,6,16,16,0.0228,0.04,0.04,150,25,'Running,actual,experiments,for,paper,,corrected,variable,names,for,drp,and,frq'
+-------------------------------------------------------- 287218
+'Run GAss for 4 days.'
+'GAss','SSDVL',12,287218,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'Run,GAss,for,4,days.',345600
+-------------------------------------------------------- 287220
+'finer grain time run'
+'timess','SSDVL',22,287220,'TIME',60,30,450,6,6,16,16,0.0228,0.04,0.04,150,22,'finer,grain,time,run'
+-------------------------------------------------------- 287589
+'See how sSDVL last over really long experiments'
+'time1500','SSDVL',22,287589,'TIME',100,100,1200,6,6,16,16,0.0228,0.04,0.04,150,22,'See,how,sSDVL,last,over,really,long,experiments'
+-------------------------------------------------------- 287596
+'See if SDVL degrades over long time periods or if it is stable.'
+'time1200sd','SDVL',21,287596,'TIME',100,100,1200,3,5,5,5,0.0228,0.04,0.05,150,22,'See,if,SDVL,degrades,over,long,time,periods,or,if,it,is,stable.'
+-------------------------------------------------------- 287600
+'Get single datapoint to see if SDVL degrades after 1000 sec'
+'1000sd','SDVL',16,287600,'TIME',1000,100,1000,3,5,5,5,0.0228,0.04,0.05,150,16,'Get,single,datapoint,to,see,if,SDVL,degrades,after,1000,sec'
+-------------------------------------------------------- 287601
+'Get single datapoint to see if sSDVL degrades after 1000 sec'
+'1000sd','SSDVL',16,287601,'TIME',1000,100,1000,6,6,16,16,0.0228,0.04,0.04,150,16,'Get,single,datapoint,to,see,if,sSDVL,degrades,after,1000,sec'
+-------------------------------------------------------- 287692
+'See what happens if we optimise for time as well during a GA'
+'GAtime','SSDVL',24,287692,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'See,what,happens,if,we,optimise,for,time,as,well,during,a,GA',345600
+-------------------------------------------------------- 287694
+'See what happens if we optimise for time as well during BAYES OPT'
+'BOtime','SSDVL',23,287694,'BAYES',1,25,1,25,0.001,0.1,0,10,150,'See,what,happens,if,we,optimise,for,time,as,well,during,BAYES,OPT',345600
+-------------------------------------------------------- 287697
+'See what happens if we optimise for time as well during GA'
+'GAtime','SSDVL',24,287697,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'See,what,happens,if,we,optimise,for,time,as,well,during,GA',345600
+-------------------------------------------------------- 287698
+'See what happens if we optimise for time as well during GA'
+'GAtime','SSDVL',24,287698,'GENALGO',1,25,1,25,0.001,0.1,0,10,150,'See,what,happens,if,we,optimise,for,time,as,well,during,GA',345600
+-------------------------------------------------------- 287722
+'Check what is happening with zero jitter, why is averaging 0.7 not 0.8?!'
+'jitterzero','SSDVL',12,287722,'JITTER',0.0,0.1,0.0,6,6,16,16,0.0228,0.04,0.04,150,24,'Check,what,is,happening,with,zero,jitter,,why,is,averaging,0.7,not,0.8?!'
+-------------------------------------------------------- 287726
+'Repeat Jitter experiments now wrapping is fixed.'
+'jitss','SSDVL',23,287726,'JITTER',0,2,20,6,6,16,16,0.0228,0.04,0.04,150,100,'Repeat,Jitter,experiments,now,wrapping,is,fixed.'
+-------------------------------------------------------- 287727
+'Repeat Jitter experiments now wrapping is fixed. SDVL'
+'jitsd','SDVL',16,287727,'JITTER',0,2,20,3,5,5,5,0.0228,0.04,0.05,150,100,'Repeat,Jitter,experiments,now,wrapping,is,fixed.,SDVL'
+-------------------------------------------------------- 287737
+'Repeat dropout ss experiments to see if curve is nicer. SSDVL'
+'drpss','SSDVL',23,287737,'DROPOUT',0.0,0.1,1.0,6,6,16,16,0.0228,0.04,0.04,150,100,'Repeat,dropout,ss,experiments,to,see,if,curve,is,nicer.,SSDVL'
+-------------------------------------------------------- 287738
+'Repeat dropout ss experiments to see if curve is nicer. SSDVL'
+'drpss','SSDVL',23,287738,'DROPOUT',0.0,0.1,1.0,6,6,16,16,0.0228,0.04,0.04,150,100,'Repeat,dropout,ss,experiments,to,see,if,curve,is,nicer.,SSDVL'
+-------------------------------------------------------- 287739
+'Repeat dropout ss experiments to see if curve is nicer. SSDVL'
+'drpss','SSDVL',23,287739,'DROPOUT',0.0,0.1,1.0,6,1,16,16,0.0228,0.04,0.04,150,100,'Repeat,dropout,ss,experiments,to,see,if,curve,is,nicer.,SSDVL'
+-------------------------------------------------------- 287775
+'Check if leaving an alpha2 buffer with stop sliding!'
+'alpha10','SSDVL',12,287775,'TIME',450,150,450,6,10,16,16,0.0228,0.04,0.04,150,12,'Check,if,leaving,an,alpha2,buffer,with,stop,sliding!'
+-------------------------------------------------------- 287776
+'Check if leaving an alpha2 buffer with stop sliding!'
+'alpha20','SSDVL',12,287776,'TIME',450,150,450,6,20,16,16,0.0228,0.04,0.04,150,12,'Check,if,leaving,an,alpha2,buffer,with,stop,sliding!'
+-------------------------------------------------------- 287781
+'Check if leaving an alpha2 buffer with stop sliding!'
+'alpha2','SSDVL',12,287781,'TIME',450,150,450,6,2,16,16,0.0228,0.04,0.04,150,12,'Check,if,leaving,an,alpha2,buffer,with,stop,sliding!'
+-------------------------------------------------------- 287783
+'Check if leaving an alpha2 buffer with stop sliding!'
+'alpha5','SSDVL',12,287783,'TIME',450,150,450,6,5,16,16,0.0228,0.04,0.04,150,12,'Check,if,leaving,an,alpha2,buffer,with,stop,sliding!'
+-------------------------------------------------------- 287785
+'Try with a small alpha 1 (arrive close to output) and large spike area, alpha2'
+'3alpha10','SSDVL',12,287785,'TIME',450,150,450,3,10,16,16,0.0228,0.04,0.04,150,12,'Try,with,a,small,alpha,1,(arrive,close,to,output),and,large,spike,area,,alpha2'
+-------------------------------------------------------- 287786
+'Try with a small alpha 1 (arrive close to output) and large spike area, alpha2'
+'3alpha20','SSDVL',12,287786,'TIME',450,150,450,3,10,16,16,0.0228,0.04,0.04,150,12,'Try,with,a,small,alpha,1,(arrive,close,to,output),and,large,spike,area,,alpha2'
+-------------------------------------------------------- 287848
+'Repeat 3alpha20 because the last run had an error (actually run 3alpha10)'
+'3alpha20','SSDVL',12,287848,'TIME',450,450,450,3,20,16,16,0.0228,0.04,0.04,150,12,'Repeat,3alpha20,because,the,last,run,had,an,error,(actually,run,3alpha10)'
+-------------------------------------------------------- 287849
+'Explore what happens when a1 varies with a2=20.'
+'xalpha20','SSDVL',12,287849,'CUSTOM',1,1,25,3,20,16,16,0.0228,0.04,0.04,150,12,'Explore,what,happens,when,a1,varies,with,a2=20.'
+-------------------------------------------------------- 287850
+'Explore what happens when a1=3 and a2 varies.'
+'3alphax','SSDVL',12,287850,'CUSTOM',1,1,25,3,20,16,16,0.0228,0.04,0.04,150,12,'Explore,what,happens,when,a1=3,and,a2,varies.'
+-------------------------------------------------------- 287851
+'Explore what happens when a1=3 and a2 varies.'
+'time3a20','SSDVL',12,287851,'TIME',150,150,600,3,20,16,16,0.0228,0.04,0.04,150,12,'Explore,what,happens,when,a1=3,and,a2,varies.'
+-------------------------------------------------------- 288232
+'Repeat FGI for 3a20.'
+'fgi3a20','SSDVL',24,288232,'FGI',0.0222,0.0001,0.0232,3,20,16,16,0.0228,0.04,0.04,150,24,'Repeat,FGI,for,3a20.'
+-------------------------------------------------------- 288234
+'Form a nice plot of the influence of 300sec xalpha20 b20 (a1 varies, a2=20ms, b=20) when sim_time_sec=300, should result in less failed trials'
+'300sxa20b20','SSDVL',16,288234,'CUSTOM',1,1,10,3,20,20,20,0.0228,0.04,0.04,300,16,'Form,a,nice,plot,of,the,influence,of,300sec,xalpha20,b20,(a1,varies,,a2=20ms,,b=20),when,sim_time_sec=300,,should,result,in,less,failed,trials'
+-------------------------------------------------------- 288235
+'Form a nice plot of the influence of 300sec 3alphax b20 (a1=20ms, a2=varies, b=20) when sim_time_sec=300, should result in less failed trials'
+'300s3axb20','SSDVL',16,288235,'CUSTOM',2,2,24,3,20,20,20,0.0228,0.04,0.04,300,16,'Form,a,nice,plot,of,the,influence,of,300sec,3alphax,b20,(a1=20ms,,a2=varies,,b=20),when,sim_time_sec=300,,should,result,in,less,failed,trials'
+-------------------------------------------------------- 288233
+'Check influence of beta on 3a20 ssdvl.'
+'3a20bx','SSDVL',24,288233,'CUSTOM',1,1,25,3,20,16,16,0.0228,0.04,0.04,150,24,'Check,influence,of,beta,on,3a20,ssdvl.'
+-------------------------------------------------------- 288238
+'Form a nice plot of the influence of 300sec 3alpha20 bx (a1=3ms, a2=20, b=x) when sim_time_sec=300, should result in less failed trials'
+'300s3a20bx','SSDVL',24,288238,'CUSTOM',2,2,24,3,20,20,20,0.0228,0.04,0.04,300,24,'Form,a,nice,plot,of,the,influence,of,300sec,3alpha20,bx,(a1=3ms,,a2=20,,b=x),when,sim_time_sec=300,,should,result,in,less,failed,trials'
+-------------------------------------------------------- 288441
+'Rerun experiments with new regime, see name for details.'
+'jit3a20b20','SSDVL',16,288441,'JITTER',0,2,20,3,20,20,20,0.0228,0.04,0.04,300,50,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288442
+'Rerun experiments with new regime, see name for details.'
+'frq3a20b20','SSDVL',16,288442,'FREQUENCY',1,1,10,3,20,20,20,0.0228,0.04,0.04,300,50,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288443
+'Rerun experiments with new regime, see name for details.'
+'naf3a20b20','SSDVL',16,288443,'NUMAFFERENTS',0,100,1000,3,20,20,20,0.0228,0.04,0.04,300,50,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288444
+'Rerun experiments with new regime, see name for details.'
+'drp3a20b20','SSDVL',16,288444,'DROPOUT',0.0,0.1,1.0,3,20,20,20,0.0228,0.04,0.04,300,50,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288445
+'Rerun experiments with new regime, see name for details.'
+'fgi3a20b20','SSDVL',24,288445,'FGI',0.0222,0.0001,0.0234,3,20,20,20,0.0228,0.04,0.04,300,50,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288478
+'Just start testing IP'
+'IPtest','SSDVL',11,288478,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.04,150,11,'Just,start,testing,IP'
+-------------------------------------------------------- 288479
+'See the effect of the thres_rise variable'
+'IPrise','SSDVL',12,288479,'CUSTOM',0,2,20,3,20,20,20,0.0228,0.04,0.04,150,12,'See,the,effect,of,the,thres_rise,variable'
+-------------------------------------------------------- 288480
+'See the effect of the thres_rise variable, finish quickly'
+'IPrapid','SSDVL',12,288480,'CUSTOM',1,5,21,3,20,20,20,0.0228,0.04,0.04,150,12,'See,the,effect,of,the,thres_rise,variable,,finish,quickly'
+-------------------------------------------------------- 288481
+'See the effect of changing fgi with IP at 10mV.'
+'IPfgi','SSDVL',12,288481,'FGI',0.0222,0.0004,0.0234,3,20,20,20,0.0228,0.04,0.04,150,12,'See,the,effect,of,changing,fgi,with,IP,at,10mV.'
+-------------------------------------------------------- 288446
+'Rerun experiments with new regime, see name for details.'
+'grid3a20b20','SSDVL',16,288446,'GRID',1,1,25,3,20,20,20,0.0228,0.04,0.04,300,16,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288447
+'Rerun experiments with new regime, see name for details.'
+'grid3a20b20','SSDVL',16,288447,'GRID',1,1,25,3,20,20,20,0.0228,0.04,0.04,300,16,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288448
+'Rerun experiments with new regime, see name for details.'
+'grid3a20b20','SSDVL',16,288448,'GRID',1,1,25,3,20,20,20,0.0228,0.04,0.04,300,16,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288449
+'Rerun experiments with new regime, see name for details.'
+'grid3a20b20','SSDVL',16,288449,'GRID',1,1,25,3,20,20,20,0.0228,0.04,0.04,300,16,'Rerun,experiments,with,new,regime,,see,name,for,details.'
+-------------------------------------------------------- 288551
+'Repeat main experiments at 300s.'
+'naf300','SSDVL',16,288551,'NUMAFFERENTS',0,100,1000,3,20,20,20,0.0228,0.04,0.04,300,100,'Repeat,main,experiments,at,300s.'
+-------------------------------------------------------- 288552
+'Repeat main experiments at 300s.'
+'jit300','SSDVL',16,288552,'JITTER',0,2,20,3,20,20,20,0.0228,0.04,0.04,300,100,'Repeat,main,experiments,at,300s.'
+-------------------------------------------------------- 288553
+'Repeat main experiments at 300s.'
+'frq300','SSDVL',16,288553,'FREQUENCY',1,1,10,3,20,20,20,0.0228,0.04,0.04,300,100,'Repeat,main,experiments,at,300s.'
+-------------------------------------------------------- 288554
+'Repeat main experiments at 300s.'
+'drp300','SSDVL',16,288554,'DROPOUT',0.0,0.1,1.0,3,20,20,20,0.0228,0.04,0.04,300,100,'Repeat,main,experiments,at,300s.'
+-------------------------------------------------------- 288777
+'Test what happens when variance is fixed at max'
+'maxvar','SSDVL',16,288777,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,10.0,300,16,'Test,what,happens,when,variance,is,fixed,at,max'
+-------------------------------------------------------- 288778
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288778,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288779
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288779,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288780
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288780,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288781
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288781,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288782
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288782,'CUSTOM',0,0,0,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288783
+'Test what happens when variance is fixed at min'
+'minvar','SSDVL',16,288783,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.1,300,16,'Test,what,happens,when,variance,is,fixed,at,min'
+-------------------------------------------------------- 288784
+'Test what happens when variance is fixed at mix/max'
+'minvar','SSDVL',16,288784,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.0,300,16,'Test,what,happens,when,variance,is,fixed,at,mix/max'
+-------------------------------------------------------- 288785
+'Test what happens when variance is fixed at mix/max'
+'maxvar','SSDVL',16,288785,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.0,300,16,'Test,what,happens,when,variance,is,fixed,at,mix/max'
+-------------------------------------------------------- 288786
+'Test what happens when variance is fixed at mix/max'
+'maxvar','SSDVL',16,288786,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.0,300,100,'Test,what,happens,when,variance,is,fixed,at,mix/max'
+-------------------------------------------------------- 288787
+'Test what happens when variance is fixed at mix/max'
+'minvar','SSDVL',16,288787,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.0,300,100,'Test,what,happens,when,variance,is,fixed,at,mix/max'
+-------------------------------------------------------- 288798
+'Test what happens when variance is fixed at mix/max'
+'maxvar','SSDVL',16,288798,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.0,300,100,'Test,what,happens,when,variance,is,fixed,at,mix/max'
+-------------------------------------------------------- 288801
+'Slots are exactly 200ms apart with IP'
+'eqslotsIP','SSDVL',16,288801,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.04,300,16,'Slots,are,exactly,200ms,apart,with,IP'
+-------------------------------------------------------- 288845
+'Slots are exactly 200ms apart with IP'
+'eqslotsIP','SSDVL',16,288845,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.04,300,16,'Slots,are,exactly,200ms,apart,with,IP'
+-------------------------------------------------------- 288855
+'Slots are exactly 200ms apart with IP'
+'eqslotsIP','SSDVL',16,288855,'CUSTOM',1,1,1,3,20,20,20,0.0228,0.04,0.04,300,16,'Slots,are,exactly,200ms,apart,with,IP'
+-------------------------------------------------------- 288883
+'How does the variance go... (note 150sec)'
+'varyvar','SSDVL',16,288883,'CUSTOM',0.1,2,10.1,3,20,20,20,0.0228,0.04,0.04,150,16,'How,does,the,variance,go...,(note,150sec)'
+-------------------------------------------------------- 288901
+'How does the variance go... 300sec'
+'varyvar','SSDVL',24,288901,'CUSTOM',0.1,2,10.1,3,20,20,20,0.0228,0.04,0.04,300,48,'How,does,the,variance,go...,300sec'
+-------------------------------------------------------- 288903
+'How does the variance go... 300sec'
+'varyvar','SSDVL',24,288903,'CUSTOM',0.1,1,10.1,3,20,20,20,0.0228,0.04,0.04,300,48,'How,does,the,variance,go...,300sec'
+-------------------------------------------------------- 288937
+'How does the variance go... 300sec'
+'varyvar','SSDVL',24,288937,'CUSTOM',0.1,1,10,3,20,20,20,0.0228,0.04,0.0,300,24,'How,does,the,variance,go...,300sec'
+-------------------------------------------------------- 288938
+'How does the variance go... 150sec'
+'vary150','SSDVL',24,288938,'CUSTOM',0.1,1,10,3,20,20,20,0.0228,0.04,0.0,150,24,'How,does,the,variance,go...,150sec'
+-------------------------------------------------------- 288939
+'How does the variance go... 150sec'
+'vary150','SSDVL',24,288939,'CUSTOM',0.1,2,10,3,20,20,20,0.0228,0.04,0.0,150,24,'How,does,the,variance,go...,150sec'
+-------------------------------------------------------- 289100
+'Try new wobbly IP rule'
+'wobblevar','SSDVL',8,289100,'CUSTOM',0.0001,0.01,0.1,3,20,20,20,0.0228,0.04,0.04,150,8,'Try,new,wobbly,IP,rule'
+-------------------------------------------------------- 289101
+'Try new wobbly IP rule but allow dv_thres to be >> 1 and << 1 in the trace but do a max(min()) when applying the learning.'
+'rememberingwobble','SSDVL',8,289101,'CUSTOM',0.0001,0.01,0.1,3,20,20,20,0.0228,0.04,0.04,150,8,'Try,new,wobbly,IP,rule,but,allow,dv_thres,to,be,>>,1,and,<<,1,in,the,trace,but,do,a,max(min()),when,applying,the,learning.'
+-------------------------------------------------------- 289103
+'Try new wobbly IP rule but allow dv_thres to be >> 1 and << 1 in the trace but do a max(min()) when applying the learning.'
+'fastremember','SSDVL',8,289103,'CUSTOM',0.0001,0.03,0.1,3,20,20,20,0.0228,0.04,0.04,150,8,'Try,new,wobbly,IP,rule,but,allow,dv_thres,to,be,>>,1,and,<<,1,in,the,trace,but,do,a,max(min()),when,applying,the,learning.'
+-------------------------------------------------------- 289104
+'a better guess at ranges for the IP rule, 0.5 : 1 : 4.5 mV a sec??'
+'educatedremember','SSDVL',8,289104,'CUSTOM',0.0005,0.001,0.0045,3,20,20,20,0.0228,0.04,0.04,150,8,'a,better,guess,at,ranges,for,the,IP,rule,,0.5,:,1,:,4.5,mV,a,sec??'
+-------------------------------------------------------- 289105
+'a better guess at ranges for the IP rule, 0.5 : 1 : 4.5 mV a sec??'
+'vsmall','SSDVL',12,289105,'CUSTOM',0.000001,0.00001,0.000151,3,20,20,20,0.0228,0.04,0.04,300,12,'a,better,guess,at,ranges,for,the,IP,rule,,0.5,:,1,:,4.5,mV,a,sec??'
+-------------------------------------------------------- 289107
+'over shorter time to compare fairly'
+'vsmall150','SSDVL',16,289107,'CUSTOM',0.000001,0.00001,0.000151,3,20,20,20,0.0228,0.04,0.04,150,16,'over,shorter,time,to,compare,fairly'
+-------------------------------------------------------- 289131
+'lr gets divided, changed to +2 for a spike and made forgettful bounded to (1, -1)'
+'bigforgettful','SSDVL',16,289131,'CUSTOM',0.001,0.01,0.151,3,20,20,20,0.0228,0.04,0.04,150,16,'lr,gets,divided,,changed,to,+2,for,a,spike,and,made,forgettful,bounded,to,(1,,-1)'
+-------------------------------------------------------- 289139
+'lr gets divided, changed to +2 for a spike and made forgettful bounded to (1, -1)'
+'dvtraceforget','SSDVL',16,289139,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,16,'lr,gets,divided,,changed,to,+2,for,a,spike,and,made,forgettful,bounded,to,(1,,-1)'
+-------------------------------------------------------- 289138
+'lr gets divided, changed to +2 for a spike and made forgettful bounded to (1, -1)'
+'bigforgettful','SSDVL',16,289138,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,16,'lr,gets,divided,,changed,to,+2,for,a,spike,and,made,forgettful,bounded,to,(1,,-1)'
+-------------------------------------------------------- 289140
+'lr gets divided, changed to +2 for a spike and made forgettful bounded to (1, -1)'
+'dvtraceforget','SSDVL',16,289140,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,16,'lr,gets,divided,,changed,to,+2,for,a,spike,and,made,forgettful,bounded,to,(1,,-1)'
+-------------------------------------------------------- 289141
+'lr gets divided, changed to +2 for a spike and made forgettful bounded to (1, -1)'
+'dvtraceremember','SSDVL',16,289141,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,16,'lr,gets,divided,,changed,to,+2,for,a,spike,and,made,forgettful,bounded,to,(1,,-1)'
+-------------------------------------------------------- 289143
+'Test forgetful for stability over 1000 seconds'
+'dvtraceremember','SSDVL',8,289143,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,1000,8,'Test,forgetful,for,stability,over,1000,seconds'
+-------------------------------------------------------- 289144
+'Generate some more forgettful to get a better sample /average'
+'batchforget','SSDVL',16,289144,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,32,'Generate,some,more,forgettful,to,get,a,better,sample,/average'
+-------------------------------------------------------- 289607
+'Repeat experiments with new IP'
+'IPnaf','SSDVL',16,289607,'NUMAFFERENTS',0,100,1000,3,20,20,20,0.0228,0.04,0.04,150,16,'Repeat,experiments,with,new,IP'
+-------------------------------------------------------- 289644
+'Repeat experiments with new IP'
+'IPjit','SSDVL',16,289644,'JITTER',0,2,20,3,20,20,20,0.0228,0.04,0.04,150,16,'Repeat,experiments,with,new,IP'
+-------------------------------------------------------- 289661
+'Repeat experiments with new IP'
+'IPfrq','SSDVL',16,289661,'FREQUENCY',1,1,10,3,20,20,20,0.0228,0.04,0.04,150,16,'Repeat,experiments,with,new,IP'
+-------------------------------------------------------- 289685
+'Repeat experiments with new IP'
+'IPdrp','SSDVL',16,289685,'DROPOUT',0.0,0.1,1.0,3,20,20,20,0.0228,0.04,0.04,150,16,'Repeat,experiments,with,new,IP'
