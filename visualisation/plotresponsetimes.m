@@ -15,7 +15,8 @@ for i = 1 : numel(offsets)
     end
 end
 
-plot(times(:, 1), times(:, 2), '.');
-title('Time of first spike within pattern (if any)');
+plot(times(:, 2), times(:, 1) / 1000, '.');
+set(gca, 'YDir','reverse')
+title('Output response time');
 
 end

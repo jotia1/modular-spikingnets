@@ -1,4 +1,4 @@
-function [ ] = plotall(net, out, plot_lines)
+function [ figh ] = plotall(net, out, plot_lines, do_save)
 %% PLOTALL - Plot a series of frequently used graphs in a tabbed figure
 %
 %   Parameters:
@@ -10,12 +10,16 @@ function [ ] = plotall(net, out, plot_lines)
 % TODO : Hardcoded...
 Tp = 50;
 
-figure('name', net.output_folder);
+figh = figure('name', sprintf('%s : %d_%d : %.2f', net.output_folder, net.count, net.repeat, out.accuracy));
 tg = uitabgroup;
 
 %% Create raster plot
 rasttab = uitab(tg, 'Title', 'Raster plot');
 axes('Parent', rasttab);
+
+if ~exist('do_save','var')
+    do_save = false;
+end
 
 if ~exist('plot_lines', 'var')
     plot_lines = numel(find(out.spike_time_trace(:, 2) == net.N)) < 1000;
@@ -23,15 +27,13 @@ end
 
 rasterspiketimes(out.spike_time_trace, net.group_sizes(1), 1, plot_lines);
 highlightoffsets(out.offsets, Tp);
+%visualiseaccuracy(net, out);
     
 %% Create voltage plot
 if numel(net.voltages_to_save) > 0
     volttab = uitab(tg, 'Title', 'voltage plot');
     axes('Parent', volttab);
-    plot(out.vt');
-    hold on
-    plot( get( gca, 'Xlim' ), [net.v_thres net.v_thres], '--k', 'LineWidth',2)
-    highlightoffsets(out.offsets, Tp);
+    plotvoltage(net, out);
 end
 
 %% Create variance and delay raster plot
@@ -52,5 +54,9 @@ end
 vdrstab = uitab(tg, 'Title', 'resp. time');
 axes('Parent', vdrstab);
 plotresponsetimes(net, out)
+
+if do_save
+    savefig(figh, sprintf('%s_%d_%d.fig', net.output_folder, net.count, net.repeat));
+end
 
 end
