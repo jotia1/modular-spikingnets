@@ -56,6 +56,14 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
             net.If = 0.0222;
             net.Tf = 30;
 
+            %% Intrinsic plasticity
+            net.dynamic_threshold = true;
+            net.thres_rise = nan;
+            net.thres_freq = 5;
+            net.thres_lr = 0.021;
+            %net.delays_to_save = [2001];
+            net.v_thres_to_save = [2001];
+
             % Set alpha beta eta
             net.a1 = alpha1; net.a2 = alpha2;
             net.b1 = beta1; net.b2 = beta2;
@@ -84,13 +92,19 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
                 elseif strcmp(task, 'NUMAFFERENTS')
                     net.Np = var;
                 elseif strcmp(task, 'GRID')
-                    tvar = net.var_range(count);
-                    [alpha, beta] = ind2sub([grid_size, grid_size], tvar);
+                    [alpha, beta] = ind2sub([grid_size, grid_size], var);
                     net.a1 = alpha; net.a2 = alpha;
                     net.b1 = beta; net.b2 = beta;
                     net.nv = net.nu;
                 elseif strcmp(task, 'TIME')
                     net.sim_time_sec = var;
+                elseif strcmp(task, 'CUSTOM')
+                    net.custom = 'New IP rule testing';
+                    net.v_thres_to_save = [2001];
+                    net.dynamic_threshold = true;
+                    net.thres_freq = 5;
+                    net.thres_lr = var;
+                    
                 else
                     fprintf('INVALID TASK: %s\n', task); 
                     assert false

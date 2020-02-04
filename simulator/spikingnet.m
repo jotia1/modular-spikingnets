@@ -98,7 +98,7 @@ out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 
 out.spike_time_trace = [];
 out.offsets = [];
-debug = zeros(sim_time_ms, 0);
+debug = zeros(sim_time_ms, 1);
 
 if net.print_progress
     disp('Starting simulation');
@@ -229,8 +229,7 @@ for sec = 1 : net.sim_time_sec
    
         v(fired) = net.v_reset;
         %v_thres(fired) = v_thres(fired) + net.thres_rise;
-        dv_thres(fired) = dv_thres(fired) + 1;
-        %debug = [debug; v_thres'];
+        dv_thres(fired) = dv_thres(fired) + 2;
         
         %% TIMER
         out.timing_info.profiling_tocs(5, time) = toc(ms_tic);
@@ -298,10 +297,11 @@ for sec = 1 : net.sim_time_sec
         %% Intrinsic plasticity threshold decay
         %v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
         dv_thres = min(dv_thres, 1);  % Bound to no larger than 1
-        v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr .* dv_thres(N_inp + 1 : end));
+        v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr / ms_per_sec .* min(max(dv_thres(N_inp + 1 : end), -1), 1));
         dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (net.thres_freq / ms_per_sec);
         dv_thres = max(dv_thres, -1);   % Bound to -1 minimum
         v_threst(:, time) = v_thres(net.v_thres_to_save)';
+        debug(time) = dv_thres(N_inp + 1);
         
         %% Synaptic bounding - limit w to [0, w_max]
         w = max(0, min(net.w_max, w)); 

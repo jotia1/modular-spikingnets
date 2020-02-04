@@ -1,34 +1,34 @@
 #! /bin/bash
 
-#SBATCH --job-name=timesd
-#SBATCH --partition=batch
+#SBATCH --job-name=IPdrp
+#SBATCH --partition=coursework
 ##SBATCH --nodelist=r730-1
 #SBATCH --mail-type=end
 #SBATCH --mail-user=joshua.arnold1@uqconnect.edu.au
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=16
 
 # Learning Rule;
 #       SDVL
 #       SSDVL
-LEARNINGRULE="'SDVL'"
+LEARNINGRULE="'SSDVL'"
 
 # Task;
 #       JITTER          FREQUENCY
 #       NUMAFFERENTS    DROPOUT
 #       FGI             GRID
 #       TIME            BAYES
-#       GENALGO
-TASK="'TIME'"
-TASKSTART="150"
-TASKSTEP="75"
-TASKEND="450"
+#       GENALGO         CUSTOM
+TASK="'DROPOUT'"
+TASKSTART="0.021"
+TASKSTEP="0.01"
+TASKEND="0.022"
 
-NOTES="'Test what impact simulation time has on network performance.'"
+NOTES="'Repeat experiments with new IP'"
 
 FGI="0.0228"
 ETAMEAN="0.04"
 SIMTIME=150
-REPEATS=24
+REPEATS=16
 
 if [ $LEARNINGRULE = "'SDVL'" ] ; then
     ALPHA1=3
@@ -36,16 +36,38 @@ if [ $LEARNINGRULE = "'SDVL'" ] ; then
     BETA1=5
     BETA2=5
     ETAVAR="0.05"
-else
-    ALPHA1=6
-    ALPHA2=6
-    BETA1=16
-    BETA2=16
+else  # If sSDVL 
+    ALPHA1=3
+    ALPHA2=20
+    BETA1=20
+    BETA2=20
     ETAVAR="0.04"
 fi
 
 CPUS=$SLURM_CPUS_PER_TASK
 NAME="'$SLURM_JOB_NAME'"
+
+if [ $TASK = "'JITTER'" ] ; then
+    TASKSTART="0"
+    TASKSTEP="2"
+    TASKEND="20"
+elif [ $TASK = "'NUMAFFERENTS'" ] ; then
+    TASKSTART="0"
+    TASKSTEP="100"
+    TASKEND="1000"
+elif [ $TASK = "'FREQUENCY'" ] ; then
+    TASKSTART="1"
+    TASKSTEP="1"
+    TASKEND="10"
+elif [ $TASK = "'DROPOUT'" ] ; then
+    TASKSTART="0.0"
+    TASKSTEP="0.1"
+    TASKEND="1.0"
+elif [ $TASK = "'FGI'" ] ; then
+    TASKSTART="0.0222"
+    TASKSTEP="0.0001"
+    TASKEND="0.0234"
+fi
 
 if [ $TASK = "'BAYES'" ] || [ $TASK = "'GENALGO'" ] ; then
     ALPHA_MIN=1
@@ -56,7 +78,7 @@ if [ $TASK = "'BAYES'" ] || [ $TASK = "'GENALGO'" ] ; then
     FGI_MAX=10
     ETA_MIN="0.001"
     ETA_MAX="0.1"
-    SLURMTIME=$((1 * 9000)) # days x hours x minutes x seconds
+    SLURMTIME=$((4 * 24 * 60 * 60)) # days x hours x minutes x seconds
     ARGS="$NAME $LEARNINGRULE $CPUS $SLURM_JOB_ID $TASK $ALPHA_MIN $ALPHA_MAX $BETA_MIN $BETA_MAX $ETA_MIN $ETA_MAX $FGI_MIN $FGI_MAX $SIMTIME $NOTES $SLURMTIME"
     MATLABSCRIPT="executeoptim"
 
