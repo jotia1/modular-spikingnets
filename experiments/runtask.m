@@ -1,13 +1,12 @@
-function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, taskstep, taskend, alpha1, alpha2, beta1, beta2, fgi, etamean, etavar, sim_time_secs, repeats, notes)
+function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taskend, alpha1, alpha2, beta1, beta2, fgi, etamean, etavar, Apre, Apost, taupre, taupost, sim_time_secs, repeats, vars_to_set, notes)
 
-
+    assert(mod(numel(vars_to_set),2)==0, 'vars_to_set but be key value pairs, got an odd number.');
 
     addpath(genpath('../'));
     parpool(cpus); 
 
     duplicate_num = mod(slurm_id, 10);
     num_repeats = repeats;
-    grid_size = 25;
 
     %   duplicate number,
     %   parpool, var_range
@@ -39,7 +38,6 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
             net.sim_time_sec = sim_time_secs;
             net.test_seconds = 50;
             net.var_range = var_range;
-            net.learning_rule = learning_rule;
             
             net.Tp = 50;
             net.Df = 10;
@@ -64,51 +62,77 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
             %net.delays_to_save = [2001];
             net.v_thres_to_save = [2001];
 
-            % Set alpha beta eta
+            %% Set alpha beta eta
             net.a1 = alpha1; net.a2 = alpha2;
             net.b1 = beta1; net.b2 = beta2;
             net.nu = etamean; net.nv = etavar;
-
+            
+            %% STDP 
+            net.Apre = Apre;
+            net.Apost = Apost;
+            net.taupre = taupre;
+            net.taupost = taupost;
         
             try
                 var = net.var_range(count);
+                
+                for i = 1 : 2 : numel(vars_to_set)
+                    net.(vars_to_set{i}) = vars_to_set{i + 1};
+                end
 
                 net.preset_seed = duplicate_num * 17 + repeat * 19 + count * 23; 
                 rng(net.preset_seed);
                 net.rand_seed = -1;  % don't set inside simulator.
                 
                 % Set experiment variable
+                net.(task) = var;
+                
                 net.pattfun = [];
-                if strcmp(task, 'FGI')
-                    net.fgi = var;
-                elseif strcmp(task, 'JITTER')
-                    net.jit = var;
+                if strcmp(task, 'jit')
                     net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
-                elseif strcmp(task, 'FREQUENCY')
-                    net.Pf = var;
-                elseif strcmp(task, 'DROPOUT')
-                    net.dropout = var;
-                    net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
-                elseif strcmp(task, 'NUMAFFERENTS')
-                    net.Np = var;
+                elseif strcmp(task, 'dropout')
+                    net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);                
                 elseif strcmp(task, 'GRID')
+                    grid_size = 25;
                     [alpha, beta] = ind2sub([grid_size, grid_size], var);
                     net.a1 = alpha; net.a2 = alpha;
                     net.b1 = beta; net.b2 = beta;
                     net.nv = net.nu;
-                elseif strcmp(task, 'TIME')
-                    net.sim_time_sec = var;
-                elseif strcmp(task, 'CUSTOM')
-                    net.custom = 'New IP rule testing';
-                    net.v_thres_to_save = [2001];
-                    net.dynamic_threshold = true;
-                    net.thres_freq = 5;
-                    net.thres_lr = var;
-                    
-                else
-                    fprintf('INVALID TASK: %s\n', task); 
-                    assert false
-                end
+                end     
+                
+                
+%                 % Set experiment variable
+%                 net.pattfun = [];
+%                 if strcmp(task, 'FGI')
+%                     net.fgi = var;
+%                 elseif strcmp(task, 'JITTER')
+%                     net.jit = var;
+%                     net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
+%                 elseif strcmp(task, 'FREQUENCY')
+%                     net.Pf = var;
+%                 elseif strcmp(task, 'DROPOUT')
+%                     net.dropout = var;
+%                     net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
+%                 elseif strcmp(task, 'NUMAFFERENTS')
+%                     net.Np = var;
+%                 elseif strcmp(task, 'GRID')
+%                     [alpha, beta] = ind2sub([grid_size, grid_size], var);
+%                     net.a1 = alpha; net.a2 = alpha;
+%                     net.b1 = beta; net.b2 = beta;
+%                     net.nv = net.nu;
+%                 elseif strcmp(task, 'TIME')
+%                     net.sim_time_sec = var;
+%                 elseif strcmp(task, 'CUSTOM')
+%                     net.custom = 'New IP rule testing';
+%                     net.v_thres_to_save = [2001];
+%                     net.dynamic_threshold = true;
+%                     net.thres_freq = 5;
+%                     net.thres_lr = var;
+%                     
+%                 else
+%                     fprintf('INVALID TASK: %s\n', task); 
+%                     assert false
+%                 end
 
                 [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
                 net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
@@ -136,11 +160,10 @@ function [] = runtask(exp_name, learning_rule, cpus, slurm_id, task, taskstart, 
                 out.slurm_id = slurm_id;
                 out.notes = notes;
                 out.name = exp_name;
-                out.learning_rule = learning_rule;
 
             catch exception
                 err = lasterror;
-                fprintf('-----------------       ===============       ERRORRR: progress %s: count: %d, repeat: %d \n\n\n%s\n\n%s\n\n', output_folder, count, repeat, getReport    (exception), err.message);
+                fprintf('-----------------       ===============       ERRORRR: progress %s: count: %d, repeat: %d \n\n\n%s\n\n%s\n\n', output_folder, count, repeat, getReport(exception), err.message);
             end
 
             try 

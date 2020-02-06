@@ -17,15 +17,6 @@ end
 ms_per_sec = 1000;
 sim_time_ms = net.sim_time_sec * ms_per_sec;
 
-% Sanity check learning rule
-if strcmp(net.learning_rule, 'SSDVL')
-    %assert(net.a2 == net.delay_max, sprintf('SSDVL defines a2 as 1. a2 has value:%d', net.a2));
-    %assert(net.nu == net.nv, 'Values for nu and nv differ, should be equal for SSDVL');
-    assert(net.b1 == net.b2, 'Values for b1 and b1 should be equal for SSDVL');
-else
-    assert(strcmp(net.learning_rule, 'SDVL'), 'Learning rule unknown: %s', net.learning_rule);
-end
-
 % SDVL variables
 delays = net.delays;
 delayst = zeros(numel(net.delays_to_save), net.N, sim_time_ms);
@@ -112,6 +103,11 @@ for sec = 1 : net.sim_time_sec
         [inp_trimmed, ts_trimmed, ~, ~, offsets] = net.data_generator();
         ts_trimmed = ts_trimmed + (sec -1) * 1000;
         out.offsets = [out.offsets, offsets + (sec -1) * 1000];
+        % TODO : offsets start at time index 0, but ms loop below starts at
+        % 1 meaning the first (zeroth) ms will be data from previous inp,ts
+        % combination and if a pattern occurs in the first slot then the
+        % zeroth ms will get cut off (possibly explains some of the
+        % representations I have been seeing). 
     else
         % Trim data into seconds to speed searching later
         idxs = net.ts > (sec - 1) * 1000 & net.ts <= (sec * 1000);
@@ -276,12 +272,8 @@ for sec = 1 : net.sim_time_sec
             delays(conns) = max(1, min(net.delay_max, delays(conns)));
 
             % Update SDVL variance
-            if strcmp(net.learning_rule, 'SSDVL')
-                dvar = (ones(size(t0_negu)) .* -k) .* net.nv; 
-            else % if SDVL
-                dvar = zeros(size(t0_negu));
-                dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
-            end
+            dvar = zeros(size(t0_negu));
+            dvar(abst0_negu <= net.b2) = -k(abst0_negu <= net.b2) .* net.nv;
             dvar(abst0_negu >= net.b1) = k(abst0_negu >= net.b1) .* net.nv;
 
             variance(:, fired) = variance(:, fired) + (dvar .* conns(:, fired));
