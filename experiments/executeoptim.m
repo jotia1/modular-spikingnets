@@ -1,19 +1,23 @@
-function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, exp_notes, slurm_time)
+%function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, exp_notes, slurm_time)
+function [ ] = executeoptim(exp_name, cpus, slurm_id, task, vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, exp_notes, slurm_time)
+
     %% play with optimisation
     addpath(genpath('../'));
 
     % Try stopping 30 mins early so running trials can end before getting slurmed
     slurm_time = slurm_time - (30 * 60);  % 30 minutes x 60 seconds
     rng(1);
-    SIM_TIME=sim_time_sec;
+    %SIM_TIME=sim_time_sec;
     parpool(cpus);
     output_folder = sprintf('%s_%d', exp_name, slurm_id); %newoutputfolder(exp_name);
     mkdir(output_folder);
     
     if strcmp(task, 'BAYES')
-        result = runbayes(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        %result = runbayes(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        result = runbayes(vars_to_set, vars_to_opimise, lbs, ubs, sim_time_sec, output_folder, slurm_time);
     elseif strcmp(task, 'GENALGO')
-        result = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        %result = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
+        result = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, output_folder, slurm_time);
     else
         fprintf('ERROR: Unrecognised task: %s\n', task);
         return;
@@ -25,21 +29,26 @@ function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alpham
 
 end
 
-function [results] = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
-    fprintf('Start optimising %s with GA\n', learning_rule);
+%function [results] = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
+function [results] = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, output_folder, slurm_time)
+    fprintf('Start optimising %s with GA\n', output_folder);
 
-    if strcmp(learning_rule, 'SSDVL')
-        lb = [alphamin, betamin, etamin, fgimin];
-        ub = [alphamax, betamax, etamax, fgimax];
-        fun = @(x) ssdvlnetwork(x, sim_time_sec);
-    elseif strcmp(learning_rule, 'SDVL')
-        lb = [alphamin, alphamin, betamin, betamin, etamin, etamin, fgimin];
-        ub = [alphamax, alphamax, betamax, betamax, etamax, etamax, fgimax];
-        fun = @(x) sdvlnetwork(x, sim_time_sec);
-    else
-        fprintf('ERROR: runga - Unknown learning rule: %s\n', learning_rule);
-        return;
-    end
+%     if strcmp(learning_rule, 'SSDVL')
+%         lb = [alphamin, betamin, etamin, fgimin];
+%         ub = [alphamax, betamax, etamax, fgimax];
+%         fun = @(x) ssdvlnetwork(x, sim_time_sec);
+%     elseif strcmp(learning_rule, 'SDVL')
+%         lb = [alphamin, alphamin, betamin, betamin, etamin, etamin, fgimin];
+%         ub = [alphamax, alphamax, betamax, betamax, etamax, etamax, fgimax];
+%         fun = @(x) sdvlnetwork(x, sim_time_sec);
+%     else
+%         fprintf('ERROR: runga - Unknown learning rule: %s\n', learning_rule);
+%         return;
+%     end
+    
+    lb = lbs;
+    ub = ubs;
+    fun = @(x) sdvlnetwork(x, vars_to_set, vars_to_optimise, sim_time_sec);
         
     numvariables = numel(lb); 
     popsize = 12;
@@ -113,71 +122,71 @@ end
 
 
 
-function [ acc ] = ssdvlnetwork( x, SIM_TIME )
+% function [ acc ] = ssdvlnetwork( x, SIM_TIME )
+% 
+%     %rng(1);
+%     net = defaultpapernetwork();
+%     net.rand_seed = -1;
+%     net.run_date = datestr(datetime);
+%     net.sim_time_sec = SIM_TIME;
+% 
+%     net.Tp = 50;
+%     net.Df = 10;
+%     net.Np = 500;
+%     net.Pf = 5;
+%     net.dropout = 0.0;
+%     net.test_seconds = 50;
+% 
+%     try
+%     if istable(x)  %% BAYES OPT
+%         net.fgi = (220 + x.fgi) / 1e4; % Hack to avoid need for many ptables
+%         net.a1 = x.a1; net.a2 = x.a1;
+%         net.b1 = x.b1; net.b2 = x.b1;
+%         net.nu = x.nu; net.nv = x.nu;
+%     else    %% GA OPT
+%         net.fgi = (220 + x(4)) / 1e4;
+%         net.a1 = x(1); net.a2 = x(1);
+%         net.b1 = x(2); net.b2 = x(2);
+%         net.nu = x(3); net.nv = x(3);
+%     end
+%     catch err
+%         fid = fopen('errorFile','a+');
+%         fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'))
+%         fclose(fid)
+%         acc = 1.1;
+%         return
+%     end
+% 
+%     net.use_simulated_annealing = false;
+%     net.If = 0.0222;
+%     net.Tf = 30;
+% 
+%     % Set up pattern
+%     net.pattfun = [];
+%     [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );         
+%     net.data_generator = @() balancedpoisson(net.Tp, net.Df, net.group_sizes(1), net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
+% 
+% 
+%     try    
+%         out = ssdvl(net);
+%     catch err
+%         fid = fopen('errorFile','a+');
+%         fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'))
+%         fclose(fid)
+%         acc = 1.1;
+%         return
+%     end
+% 
+%     acc = 1 - trueposxtrueneg(net, out);
+%     %%%   DO NOT USE BELOW METRICS - MIGHT HAVE ERRORS
+%     %acc = -percentagecorrect(net, out, labels);
+%     %acc = -calcAccuracy(net, out);
+%     %acc = -totalspikes(net, out);
+% 
+% end
 
-    %rng(1);
-    net = defaultpapernetwork();
-    net.rand_seed = -1;
-    net.run_date = datestr(datetime);
-    net.sim_time_sec = SIM_TIME;
-
-    net.Tp = 50;
-    net.Df = 10;
-    net.Np = 500;
-    net.Pf = 5;
-    net.dropout = 0.0;
-    net.test_seconds = 50;
-
-    try
-    if istable(x)  %% BAYES OPT
-        net.fgi = (220 + x.fgi) / 1e4; % Hack to avoid need for many ptables
-        net.a1 = x.a1; net.a2 = x.a1;
-        net.b1 = x.b1; net.b2 = x.b1;
-        net.nu = x.nu; net.nv = x.nu;
-    else    %% GA OPT
-        net.fgi = (220 + x(4)) / 1e4;
-        net.a1 = x(1); net.a2 = x(1);
-        net.b1 = x(2); net.b2 = x(2);
-        net.nu = x(3); net.nv = x(3);
-    end
-    catch err
-        fid = fopen('errorFile','a+');
-        fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'))
-        fclose(fid)
-        acc = 1.1;
-        return
-    end
-
-    net.use_simulated_annealing = false;
-    net.If = 0.0222;
-    net.Tf = 30;
-
-    % Set up pattern
-    net.pattfun = [];
-    [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );         
-    net.data_generator = @() balancedpoisson(net.Tp, net.Df, net.group_sizes(1), net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
-
-
-    try    
-        out = ssdvl(net);
-    catch err
-        fid = fopen('errorFile','a+');
-        fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'))
-        fclose(fid)
-        acc = 1.1;
-        return
-    end
-
-    acc = 1 - trueposxtrueneg(net, out);
-    %%%   DO NOT USE BELOW METRICS - MIGHT HAVE ERRORS
-    %acc = -percentagecorrect(net, out, labels);
-    %acc = -calcAccuracy(net, out);
-    %acc = -totalspikes(net, out);
-
-end
-
-function [ acc ] = sdvlnetwork( x, SIM_TIME )
-
+function [ acc ] = sdvlnetwork( x, vars_to_set, vars_to_optimise, SIM_TIME )
+    
     %rng(1);
     net = defaultpapernetwork();
     net.rand_seed = -1;
@@ -197,16 +206,26 @@ function [ acc ] = sdvlnetwork( x, SIM_TIME )
         net.b1 = x.b1; net.b2 = x.b1;
         net.nu = x.nu; net.nv = x.nu;
     else    %% GA OPT
-        net.fgi = (220 + x(7)) / 1e4;
-        net.a1 = x(1); net.a2 = x(2);
-        net.b1 = x(3); net.b2 = x(4);
-        net.nu = x(5); net.nv = x(6);
+        %net.fgi = (220 + x(7)) / 1e4;
+        %net.a1 = x(1); net.a2 = x(2);
+        %net.b1 = x(3); net.b2 = x(4);
+        %net.nu = x(5); net.nv = x(6);
+        % Set up any variables that need optimising.
+        for i = 1 : numel(vars_to_optimise)
+            net.(vars_to_optimise{i}) = x(i);
+        end
+        
     end
-
-
+    
     net.use_simulated_annealing = false;
     net.If = 0.0222;
     net.Tf = 30;
+    
+    % Set any variables that need setting
+    assert(mod(numel(vars_to_set),2)==0, 'vars_to_set must be key value pairs, got an odd number.');
+    for i = 1 : 2 : numel(vars_to_set)
+        net.(vars_to_set{i}) = vars_to_set{i + 1};
+    end
 
     % Set up pattern
     net.pattfun = [];
