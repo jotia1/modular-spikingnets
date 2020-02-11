@@ -1,36 +1,30 @@
-%function [] = executeoptim(exp_name, learning_rule, cpus, slurm_id, task, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, exp_notes, slurm_time)
-function [ ] = executeoptim(exp_name, cpus, slurm_id, task, vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, exp_notes, slurm_time)
+function [ ] = executeoptim(exp_name, cpus, slurm_id, task, vars_to_set, vars_to_optimise, lbs, ubs, exp_notes, slurm_time)
 
-    %% play with optimisation
     addpath(genpath('../'));
-
+    
     % Try stopping 30 mins early so running trials can end before getting slurmed
     slurm_time = slurm_time - (30 * 60);  % 30 minutes x 60 seconds
     rng(1);
-    %SIM_TIME=sim_time_sec;
+
     parpool(cpus);
-    output_folder = sprintf('%s_%d', exp_name, slurm_id); %newoutputfolder(exp_name);
+    output_folder = sprintf('%s_%d', exp_name, slurm_id); 
     mkdir(output_folder);
     
     if strcmp(task, 'BAYES')
-        %result = runbayes(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
-        result = runbayes(vars_to_set, vars_to_opimise, lbs, ubs, sim_time_sec, output_folder, slurm_time);
+        result = runbayes(vars_to_set, vars_to_optimise, lbs, ubs, output_folder, slurm_time);
     elseif strcmp(task, 'GENALGO')
-        %result = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, output_folder, slurm_time);
-        result = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, output_folder, slurm_time);
+        result = runga(vars_to_set, vars_to_optimise, lbs, ubs, output_folder, slurm_time);
     else
         fprintf('ERROR: Unrecognised task: %s\n', task);
         return;
     end
-
 
     filename = sprintf('%s/opt_%s_final', output_folder, exp_name);
     save(filename, 'result', 'slurm_id', 'exp_notes', '-v7.3');
 
 end
 
-%function [results] = runga(learning_rule, alphamin, alphamax, betamin, betamax, etamin, etamax, fgimin, fgimax, sim_time_sec, foldername, slurm_time)
-function [results] = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec, output_folder, slurm_time)
+function [results] = runga(vars_to_set, vars_to_optimise, lbs, ubs, output_folder, slurm_time)
     fprintf('Start optimising %s with GA\n', output_folder);
 
 %     if strcmp(learning_rule, 'SSDVL')
@@ -46,15 +40,13 @@ function [results] = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec
 %         return;
 %     end
     
-    lb = lbs;
-    ub = ubs;
-    fun = @(x) sdvlnetwork(x, vars_to_set, vars_to_optimise, sim_time_sec);
+    fun = @(x) sdvlnetwork(x, vars_to_set, vars_to_optimise);
         
-    numvariables = numel(lb); 
+    numvariables = numel(lbs); 
     popsize = 12;
 
     opts = optimoptions(@ga, ...
-        'OutputFcn', @(options, state, flag) logpop(options, state, flag, foldername), ...
+        'OutputFcn', @(options, state, flag) logpop(options, state, flag, output_folder), ...
         'PopulationSize', popsize, ...
         'MaxGenerations', 10, ...
         'MaxStallGenerations', 7,...
@@ -68,7 +60,7 @@ function [results] = runga(vars_to_set, vars_to_optimise, lbs, ubs, sim_time_sec
         'CrossoverFcn', 'crossoverscattered', ...
         'UseParallel',true);
 
-    [x,Fval,exitFlag,Output,population,scores] = ga(fun, numvariables, [],[],[],[], lb, ub,[],opts);
+    [x,Fval,exitFlag,Output,population,scores] = ga(fun, numvariables, [],[],[],[], lbs, ubs,[],opts);
 
     results = struct();
     results.x = x; results.exitFlag = exitFlag; 
@@ -185,13 +177,12 @@ end
 % 
 % end
 
-function [ acc ] = sdvlnetwork( x, vars_to_set, vars_to_optimise, SIM_TIME )
+function [ acc ] = sdvlnetwork( x, vars_to_set, vars_to_optimise )
     
     %rng(1);
-    net = defaultpapernetwork();
+    net = defaultnetwork();
     net.rand_seed = -1;
     net.run_date = datestr(datetime);
-    net.sim_time_sec = SIM_TIME;
 
     net.Tp = 50;
     net.Df = 10;
@@ -212,11 +203,16 @@ function [ acc ] = sdvlnetwork( x, vars_to_set, vars_to_optimise, SIM_TIME )
         %net.nu = x(5); net.nv = x(6);
         % Set up any variables that need optimising.
         for i = 1 : numel(vars_to_optimise)
+            if strcmp(vars_to_optimise{i}, 'fgi')
+                net.('fgi') = (220 + x(i)) / 1e4;
+                continue;
+            end
             net.(vars_to_optimise{i}) = x(i);
         end
         
     end
     
+    % TODO : remove after standardising default network
     net.use_simulated_annealing = false;
     net.If = 0.0222;
     net.Tf = 30;
@@ -237,6 +233,7 @@ function [ acc ] = sdvlnetwork( x, vars_to_set, vars_to_optimise, SIM_TIME )
     catch err
         fid = fopen('errorFile','a+');
         fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'))
+        fprintf('%s\n\nSee experiments/errorFile for more.', err.getReport('extended', 'hyperlinks','off'));
         fclose(fid)
         acc = 1.1;
         return

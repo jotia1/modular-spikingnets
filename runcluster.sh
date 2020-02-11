@@ -1,100 +1,82 @@
 #! /bin/bash
 
-#SBATCH --job-name=IPdrp
-#SBATCH --partition=coursework
-##SBATCH --nodelist=r730-1
+#SBATCH --job-name=optimwork
+#SBATCH --partition=batch
+##SBATCH --nodelist=r730-0
 #SBATCH --mail-type=end
 #SBATCH --mail-user=joshua.arnold1@uqconnect.edu.au
-#SBATCH --cpus-per-task=16
-
-# Learning Rule;
-#       SDVL
-#       SSDVL
-LEARNINGRULE="'SSDVL'"
+#SBATCH --cpus-per-task=4
 
 # Task;
-#       JITTER          FREQUENCY
-#       NUMAFFERENTS    DROPOUT
-#       FGI             GRID
-#       TIME            BAYES
+# Task is the name of the variable to be set before each experiment.
+#       jit             Pf
+#       naf             dropout
+#       fgi             GRID
+#       sim_time_sec    BAYES
 #       GENALGO         CUSTOM
-TASK="'DROPOUT'"
+#       THRESHOLDLR     STDP
+#       Any other field in the net structure...
+TASK="'GENALGO'"
 TASKSTART="0.021"
-TASKSTEP="0.01"
-TASKEND="0.022"
+TASKSTEP="0.005"
+TASKEND="0.03"
 
-NOTES="'Repeat experiments with new IP'"
+NOTES="'Test flexible pipeline to GA'"
 
-FGI="0.0228"
-ETAMEAN="0.04"
-SIMTIME=150
-REPEATS=16
+REPEATS=4
 
-if [ $LEARNINGRULE = "'SDVL'" ] ; then
-    ALPHA1=3
-    ALPHA2=5
-    BETA1=5
-    BETA2=5
-    ETAVAR="0.05"
-else  # If sSDVL 
-    ALPHA1=3
-    ALPHA2=20
-    BETA1=20
-    BETA2=20
-    ETAVAR="0.04"
-fi
+#VARSTOSET="{'v_thres_to_save', [2001], 'dynamic_threshold', true, 'thres_freq', 5}" 
+VARSTOSET="{'sim_time_sec', 10, 'nu', 0, 'nv', 0, 'fgi', 0.0228}"
+
+VARSTOOPTIMISE="{'Apre', 'Apost', 'taupre', 'taupost'}"
+LBS="[0.1, 0.1, 1, 1]"
+UBS="[2.0, 2.0, 40, 40]"
 
 CPUS=$SLURM_CPUS_PER_TASK
 NAME="'$SLURM_JOB_NAME'"
 
-if [ $TASK = "'JITTER'" ] ; then
+if [ $TASK = "'jit'" ] ; then
     TASKSTART="0"
     TASKSTEP="2"
     TASKEND="20"
-elif [ $TASK = "'NUMAFFERENTS'" ] ; then
+elif [ $TASK = "'naf'" ] ; then
     TASKSTART="0"
     TASKSTEP="100"
     TASKEND="1000"
-elif [ $TASK = "'FREQUENCY'" ] ; then
+elif [ $TASK = "'Pf'" ] ; then
     TASKSTART="1"
     TASKSTEP="1"
     TASKEND="10"
-elif [ $TASK = "'DROPOUT'" ] ; then
+elif [ $TASK = "'dropout'" ] ; then
     TASKSTART="0.0"
     TASKSTEP="0.1"
     TASKEND="1.0"
-elif [ $TASK = "'FGI'" ] ; then
+elif [ $TASK = "'fgi'" ] ; then
     TASKSTART="0.0222"
-    TASKSTEP="0.0001"
+    TASKSTEP="0.0002"
     TASKEND="0.0234"
+elif [ $TASK = "'thres_lr'" ] ; then
+    TASKSTART="0.001"
+    TASKSTEP="0.005"
+    TASKEND="0.041"
 fi
 
 if [ $TASK = "'BAYES'" ] || [ $TASK = "'GENALGO'" ] ; then
-    ALPHA_MIN=1
-    ALPHA_MAX=25
-    BETA_MIN=1
-    BETA_MAX=25
-    FGI_MIN=0
-    FGI_MAX=10
-    ETA_MIN="0.001"
-    ETA_MAX="0.1"
     SLURMTIME=$((4 * 24 * 60 * 60)) # days x hours x minutes x seconds
-    ARGS="$NAME $LEARNINGRULE $CPUS $SLURM_JOB_ID $TASK $ALPHA_MIN $ALPHA_MAX $BETA_MIN $BETA_MAX $ETA_MIN $ETA_MAX $FGI_MIN $FGI_MAX $SIMTIME $NOTES $SLURMTIME"
+    ARGS="$NAME, $CPUS, $SLURM_JOB_ID, $TASK, $VARSTOSET, $VARSTOOPTIMISE, $LBS, $UBS, $NOTES, $SLURMTIME" 
     MATLABSCRIPT="executeoptim"
-
 else
-    ARGS="$NAME $LEARNINGRULE $CPUS $SLURM_JOB_ID $TASK $TASKSTART $TASKSTEP $TASKEND $ALPHA1 $ALPHA2 $BETA1 $BETA2 $FGI $ETAMEAN $ETAVAR $SIMTIME $REPEATS $NOTES"
+    ARGS="$NAME, $CPUS, $SLURM_JOB_ID, $TASK, $TASKSTART, $TASKSTEP, $TASKEND, $REPEATS, $VARSTOSET, $NOTES"
     MATLABSCRIPT="runtask"
 fi
 
-CARGS="${ARGS//[[:blank:]]/,}"
-echo $CARGS
+echo "$MATLABSCRIPT $ARGS"
 
+printf -v date '%(%Y-%m-%d %H:%M:%S)T\n' -1
 JOBLOG="joblog.txt"
-echo "-------------------------------------------------------- $SLURM_JOB_ID" >> joblog.txt
-echo $NOTES >> $JOBLOG
-echo $CARGS >> $JOBLOG
+echo "------------------------- $date--------------------------------------------- $SLURM_JOB_ID" >> joblog.txt
+echo "$MATLABSCRIPT $ARGS" >> $JOBLOG
 
-srun matlab -nosplash -nodisplay -nodesktop -r "try, cd('experiments'); $MATLABSCRIPT($CARGS), catch me, fprintf('%s / %s\n',me.identifier,me.message), end, exit" >> slurm-$SLURM_JOB_ID.out
+srun matlab -nosplash -nodisplay -nodesktop -r "try, cd('experiments'); $MATLABSCRIPT($ARGS), catch me, fprintf('%s / %s\n',me.identifier,me.message), end, exit" >> slurm-$SLURM_JOB_ID.out
 
 wait

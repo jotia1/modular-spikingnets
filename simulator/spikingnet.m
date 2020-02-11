@@ -23,6 +23,8 @@ delayst = zeros(numel(net.delays_to_save), net.N, sim_time_ms);
 variance = net.variance;
 vart = zeros(numel(net.variance_to_save), net.N, sim_time_ms);
 v_threst = zeros(numel(net.v_thres_to_save), sim_time_ms);
+dv_mem_max = 2 * net.dv_mem_max;
+dv_mem_min = -dv_mem_max;
 iappt = zeros(numel(net.iapp_to_save), sim_time_ms);
 
 N = net.N;
@@ -288,12 +290,12 @@ for sec = 1 : net.sim_time_sec
     
         %% Intrinsic plasticity threshold decay
         %v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
-        dv_thres = min(dv_thres, 1);  % Bound to no larger than 1
+        dv_thres = min(dv_thres, dv_mem_max);  % Bound to no larger than max
         v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr / ms_per_sec .* min(max(dv_thres(N_inp + 1 : end), -1), 1));
-        dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (net.thres_freq / ms_per_sec);
-        dv_thres = max(dv_thres, -1);   % Bound to -1 minimum
+        dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (2 * net.thres_freq / ms_per_sec);
+        dv_thres = max(dv_thres, dv_mem_min);   % Bound to dv_mem_min minimum
         v_threst(:, time) = v_thres(net.v_thres_to_save)';
-        debug(time) = dv_thres(N_inp + 1);
+        %debug(time) = dv_thres(N_inp + 1);
         
         %% Synaptic bounding - limit w to [0, w_max]
         w = max(0, min(net.w_max, w)); 

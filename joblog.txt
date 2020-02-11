@@ -442,3 +442,78 @@
 -------------------------------------------------------- 289685
 'Repeat experiments with new IP'
 'IPdrp','SSDVL',16,289685,'DROPOUT',0.0,0.1,1.0,3,20,20,20,0.0228,0.04,0.04,150,16,'Repeat,experiments,with,new,IP'
+-------------------------------------------------------- 307131
+'See if the decay needed to be doubled to counter a sneaky grow.'
+'doubledrop','SSDVL',12,307131,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,150,12,'See,if,the,decay,needed,to,be,doubled,to,counter,a,sneaky,grow.'
+-------------------------------------------------------- 307133
+'See if the decay needed to be doubled to counter a sneaky grow.'
+'double700drop','SSDVL',12,307133,'CUSTOM',0.021,0.01,0.022,3,20,20,20,0.0228,0.04,0.04,700,12,'See,if,the,decay,needed,to,be,doubled,to,counter,a,sneaky,grow.'
+-------------------------------------------------------- 307134
+'General scan of the performance for different values of the threshold learning rate for now the threshold drops faster (2x)'
+'tlrdd','SSDVL',16,307134,'THRESHOLDLR',0.001,0.010,0.041,3,20,20,20,0.0228,0.04,0.04,700,16,'General,scan,of,the,performance,for,different,values,of,the,threshold,learning,rate,for,now,the,threshold,drops,faster,(2x)'
+-------------------------------------------------------- 307135
+'General scan of the performance for different values of the threshold learning rate for now the threshold drops faster (2x)'
+'tlrdd','SSDVL',16,307135,'THRESHOLDLR',0.001,0.010,0.041,3,20,20,20,0.0228,0.04,0.04,150,16,'General,scan,of,the,performance,for,different,values,of,the,threshold,learning,rate,for,now,the,threshold,drops,faster,(2x)'
+-------------------------------------------------------- 307136
+''
+'dvm5','SSDVL',16,307136,'THRESHOLDLR',0.001,0.005,0.041,3,20,20,20,0.0228,0.04,0.04,1000,16,''
+-------------------------------------------------------- 307137
+'Vary the memory the net has with 0.021 lr (Last one dvm5 had varied LR and fixed mem of 5).'
+'dvmx','SSDVL',16,307137,'CUSTOM',1,1,10,3,20,20,20,0.0228,0.04,0.04,1000,16,'Vary,the,memory,the,net,has,with,0.021,lr,(Last,one,dvm5,had,varied,LR,and,fixed,mem,of,5).'
+-------------------------------------------------------- 400983
+'See how STDP goes with different values for FGI, Aprepost are +-0.1'
+'stdp','SSDVL',15,400983,'STDP',0.1,2,8.1,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,FGI,,Aprepost,are,+-0.1'
+-------------------------------------------------------- 400985
+'See how STDP goes with different values for inital weight, Aprepost are +-0.1'
+'wstdp','SSDVL',15,400985,'STDP',0.1,1,8.1,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,inital,weight,,Aprepost,are,+-0.1'
+-------------------------------------------------------- 400988
+'See how STDP goes with different values for Aprepost multiplier, Apre = 0.1, Apost = -Apre analysis datasources delme.sh experiments files.txt joblog.txt networks oldslurm out.txt play.m README.md results runanalysis.sh runcluster.sh runoptim.sh setup.m simulator slurm-307131.out slurm-307133.out slurm-307134.out slurm-307135.out slurm-307136.out slurm-307137.out slurm-400983.out slurm-400985.out slurm-400988.out tmp.m tools trim.py visualisation var;'
+'Apoststdp','SSDVL',15,400988,'STDP',0.8,0.01,0.12,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,Aprepost,multiplier,,Apre,=,0.1,,Apost,=,-Apre,*,var;'
+-------------------------------------------------------- 400989
+'See how STDP goes with different values for w, aprepost = 0.1
+'wstdp','SSDVL',15,400989,'STDP',0.1,2,8.1,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,w,,aprepost,=,0.1
+-------------------------------------------------------- 400990
+'See how STDP goes with different values for w aprepost = 0.1
+'wstdp','SSDVL',15,400990,'STDP',0.1,2,8.1,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,w,aprepost,=,0.1
+-------------------------------------------------------- 400991
+'See how STDP goes with different values for w aprepost = 0.1'
+'wstdp','SSDVL',15,400991,'STDP',0.1,2,8.1,3,20,20,20,0.0228,0.04,0.04,450,15,'See,how,STDP,goes,with,different,values,for,w,aprepost,=,0.1'
+--------------------------- 2020-02-06 10:51:12
+ ----------------------------- 586823
+'Test new run paradigm.'
+'paramset',1,586823,'thres_lr',0.021,0.005,0.031,3,20,20,20,0.0228,0.04,0.04,0.0,0.0,20,20,11,1,{'v_thres_to_save',,[2001],,'dynamic_threshold',,true,,'thres_freq',,5},'Test,new,run,paradigm.'
+--------------------------- 2020-02-06 10:52:42
+ ----------------------------- 586824
+'Test new run paradigm.'
+'paramset',1,586824,'thres_lr',0.021,0.005,0.031,3,20,20,20,0.0228,0.04,0.04,0.0,0.0,20,20,11,1,{'v_thres_to_save',[2001],'dynamic_threshold',true,'thres_freq',5},'Test,new,run,paradigm.'
+--------------------------- 2020-02-06 10:57:12
+ ----------------------------- 586825
+'Test new run paradigm.'
+'paramIP',4,586825,'thres_lr',0.021,0.005,0.03,3,20,20,20,0.0228,0.04,0.04,0.0,0.0,20,20,150,4,{'v_thres_to_save',[2001],'dynamic_threshold',true,'thres_freq',5},'Test,new,run,paradigm.'
+------------------------- 2020-02-11 12:27:57
+--------------------------------------------- 586934
+executeoptim 'paramIP', 4, 586934, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test new run paradigm.', 
+------------------------- 2020-02-11 12:30:33
+--------------------------------------------- 586935
+executeoptim 'optimflex', 4, 586935, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:32:51
+--------------------------------------------- 586936
+executeoptim 'optimflex', 4, 586936, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:34:55
+--------------------------------------------- 586937
+executeoptim 'optimflex', 4, 586937, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:42:59
+--------------------------------------------- 586938
+executeoptim 'optimflex', 4, 586938, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:45:00
+--------------------------------------------- 586939
+executeoptim 'optimflex', 4, 586939, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:50:45
+--------------------------------------------- 586940
+executeoptim 'optimflex', 4, 586940, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:54:50
+--------------------------------------------- 586941
+executeoptim 'optimflex', 4, 586941, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-11 12:57:28
+--------------------------------------------- 586942
+executeoptim 'optimwork', 4, 586942, 'GENALGO', {'sim_time_sec', 10, 'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600

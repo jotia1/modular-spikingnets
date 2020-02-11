@@ -1,11 +1,11 @@
-function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taskend, alpha1, alpha2, beta1, beta2, fgi, etamean, etavar, Apre, Apost, taupre, taupost, sim_time_secs, repeats, vars_to_set, notes)
+function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taskend, repeats, vars_to_set, notes)
 
-    assert(mod(numel(vars_to_set),2)==0, 'vars_to_set but be key value pairs, got an odd number.');
+    assert(mod(numel(vars_to_set),2)==0, 'vars_to_set must be key value pairs, got an odd number.');
 
     addpath(genpath('../'));
     parpool(cpus); 
 
-    duplicate_num = mod(slurm_id, 10);
+    duplicate_num = mod(slurm_id, 100);
     num_repeats = repeats;
 
     %   duplicate number,
@@ -31,7 +31,7 @@ function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taske
 
         for count = 1 : num_range
         
-            net = defaultpapernetwork();
+            net = defaultnetwork();
 
             %% log info
             net.run_date = datestr(datetime);
@@ -57,6 +57,7 @@ function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taske
             %% Intrinsic plasticity
             net.dynamic_threshold = true;
             net.thres_rise = nan;
+            net.dv_mem_max = 5;
             net.thres_freq = 5;
             net.thres_lr = 0.021;
             %net.delays_to_save = [2001];
