@@ -71,6 +71,11 @@ Tf = net.Tf;
 anneal_gradient = (I0 - If) / (Tf * ms_per_sec);
 anneal_freq_ms = 500;
 
+% Exponential moving average parameters
+last_avg_period = 0;
+running_avg = net.avg_period * (net.Pf / ms_per_sec);%net.thres_freq;
+cur_avg = 0;
+
 if net.fixed_integrals
     variance_precision = 0.01;
     % TODO : Rename ptable to something more representative
@@ -179,6 +184,12 @@ for sec = 1 : net.sim_time_sec
         fired = [fired_naturally; fired_pixels';]; % unique in case of SDVL supervision later
         spike_time_trace = [spike_time_trace; time*ones(length(fired),1), fired];
         last_spike_time(fired) = time; 
+
+        % IP counter
+        % TODO : hardcoded for output neuron
+        if any(find(fired == 2001))
+            cur_avg = cur_avg + 1;
+        end
         
         %% TIMER
         out.timing_info.profiling_tocs(3, time) = toc(ms_tic);
@@ -288,13 +299,26 @@ for sec = 1 : net.sim_time_sec
         %% TIMER
         out.timing_info.profiling_tocs(8, time) = toc(ms_tic);
     
+        %% IP exponential moving average
+        change = 0;
+        if (time - last_avg_period) >= net.avg_period
+            running_avg = running_avg * (1 - net.ip_decay) + cur_avg * net.ip_decay;
+            cur_avg = 0;
+            last_avg_period = time;
+            change = (running_avg - net.thres_freq) * net.thres_lr;
+        end
+            
+        v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + change;
+        v_threst(:, time) = v_thres(net.v_thres_to_save)';
+        debug(time) = change; %dv_thres(N_inp + 1);
+
         %% Intrinsic plasticity threshold decay
         %v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
-        dv_thres = min(dv_thres, dv_mem_max);  % Bound to no larger than max
-        v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr / ms_per_sec .* min(max(dv_thres(N_inp + 1 : end), -1), 1));
-        dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (2 * net.thres_freq / ms_per_sec);
-        dv_thres = max(dv_thres, dv_mem_min);   % Bound to dv_mem_min minimum
-        v_threst(:, time) = v_thres(net.v_thres_to_save)';
+        %dv_thres = min(dv_thres, dv_mem_max);  % Bound to no larger than max
+        %v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + (net.thres_lr / ms_per_sec .* min(max(dv_thres(N_inp + 1 : end), -1), 1));
+        %dv_thres(N_inp + 1 : end) = dv_thres(N_inp + 1 : end) - (2 * net.thres_freq / ms_per_sec);
+        %dv_thres = max(dv_thres, dv_mem_min);   % Bound to dv_mem_min minimum
+        %v_threst(:, time) = v_thres(net.v_thres_to_save)';
         %debug(time) = dv_thres(N_inp + 1);
         
         %% Synaptic bounding - limit w to [0, w_max]
