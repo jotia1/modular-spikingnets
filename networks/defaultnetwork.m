@@ -47,6 +47,8 @@ net.If = 3.226; %4.026;
 net.Tf = 514.6;
 net.dv_mem_max = 1;
 net.thres_lr = 0.021;
+net.avg_period = 1000;
+net.ip_decay = 0.1;
 
 net.sim_time_sec = 150;
 net.test_seconds = 50;

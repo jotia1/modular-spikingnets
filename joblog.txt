@@ -517,3 +517,219 @@ executeoptim 'optimflex', 4, 586941, 'GENALGO', {'nu', 0, 'nv', 0, 'fgi', 0.0228
 ------------------------- 2020-02-11 12:57:28
 --------------------------------------------- 586942
 executeoptim 'optimwork', 4, 586942, 'GENALGO', {'sim_time_sec', 10, 'nu', 0, 'nv', 0, 'fgi', 0.0228}, {'Apre', 'Apost', 'taupre', 'taupost'}, [0.1, 0.1, 1, 1], [2.0, 2.0, 40, 40], 'Test flexible pipeline to GA', 345600
+------------------------- 2020-02-12 11:14:57
+--------------------------------------------- 586966
+executeoptim 'stdp', 24, 586966, 'GENALGO', {''nu', 0, 'nv', 0}, {'Apre', 'Apost', 'taupre', 'taupost', 'fgi'}, [0.1, 0.1, 1, 1, 0.0220], [2.0, 2.0, 40, 40, 0.0236], 'Actually test STDP', 345600
+------------------------- 2020-02-15 11:20:02
+--------------------------------------------- 588655
+runtask 'eipthres', 16, 588655, 'thres_lr', 0.001, 0.005, 0.041, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 11:23:31
+--------------------------------------------- 588656
+runtask 'eipthres', 16, 588656, 'thres_lr', 0.001, 0.005, 0.041, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 11:25:27
+--------------------------------------------- 588657
+runtask 'eipdecay', 16, 588657, 'ip_decay', 0.01, 0.1, 0.91, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 11:39:24
+--------------------------------------------- 588658
+runtask 'eipperiod', 16, 588658, 'avg_period', 200, 800, 5000, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 12:11:52
+--------------------------------------------- 588659
+runtask 'eipperiod', 16, 588659, 'avg_period', 200, 800, 5000, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 12:14:11
+--------------------------------------------- 588660
+runtask 'eipperiod', 16, 588660, 'avg_period', 200, 800, 5000, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 15:54:41
+--------------------------------------------- 588669
+runtask 'eipsthres', 16, 588669, 'thres_lr', 0.001, 0.005, 0.041, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 15:55:37
+--------------------------------------------- 588670
+runtask 'eipsperiod', 16, 588670, 'avg_period', 200, 800, 5000, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 15:56:14
+--------------------------------------------- 588671
+runtask 'eipsdecay', 16, 588671, 'ip_decay', 0.0, 0.1, 1.0, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 16:34:59
+--------------------------------------------- 588672
+runtask 'eipsavetrace', 6, 588672, 'ip_thres', 0.01, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, v_thres_to_save', [2001]}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 16:35:08
+--------------------------------------------- 588673
+runtask 'eipsavetrace', 6, 588673, 'ip_thres', 0.01, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, v_thres_to_save', [2001]}, 'Test exponential moving average IP'
+------------------------- 2020-02-15 16:36:20
+--------------------------------------------- 588674
+runtask 'eip6trace', 6, 588674, 'ip_thres', 0.06, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 16:37:03
+--------------------------------------------- 588675
+runtask 'eip6trace', 6, 588675, 'ip_thres', 0.06, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 16:37:19
+--------------------------------------------- 588676
+runtask 'eip1trace', 6, 588676, 'ip_thres', 0.01, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 16:39:56
+--------------------------------------------- 588677
+runtask 'eip1trace', 6, 588677, 'thres_lr', 0.001, 0.005, 0.041, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 16:40:11
+--------------------------------------------- 588678
+runtask 'eip6trace', 6, 588678, 'thres_lr', 0.001, 0.005, 0.041, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 16:58:41
+--------------------------------------------- 588679
+runtask 'eip6trace', 6, 588679, 'thres_lr', 0.06, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 17:01:24
+--------------------------------------------- 588680
+runtask 'eip6trace', 6, 588680, 'thres_lr', 0.06, 0.1, 0.002, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 17:17:46
+--------------------------------------------- 588681
+runtask 'eiplr', 16, 588681, 'thres_lr', 0.001, 0.005, 0.051, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 17:20:47
+--------------------------------------------- 588682
+runtask 'eiptime', 16, 588682, 'sim_time_sec', 150, 300, 1050, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 17:22:28
+--------------------------------------------- 588683
+runtask 'eipavgs', 16, 588683, 'avg_period', 200, 400, 5000, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001]}, 'Rerun previous experiments with threshold trace active...'
+------------------------- 2020-02-15 22:22:19
+--------------------------------------------- 588684
+runtask 'eiprunavg150', 6, 588684, 'thres_lr', 0.021, 0.1, 0.022, 16, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'run for the running avg trace'
+------------------------- 2020-02-15 22:22:58
+--------------------------------------------- 588685
+runtask 'eiprunavg450', 6, 588685, 'thres_lr', 0.021, 0.1, 0.022, 6, {'thres_lr', 0.001, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 450}, 'run for the running avg trace'
+------------------------- 2020-02-15 23:13:14
+--------------------------------------------- 588686
+runtask 'aIPthres_lr', 16, 588686, 'thres_lr', 0.01, 0.005, 0.061, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-15 23:14:56
+--------------------------------------------- 588687
+runtask 'aIPavg_period', 16, 588687, 'avg_period', 200, 400, 5000, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-15 23:16:39
+--------------------------------------------- 588688
+runtask 'aIPtime', 16, 588688, 'sim_time_sec', 150, 150, 1050, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-15 23:17:51
+--------------------------------------------- 588689
+runtask 'aIPip_decay', 16, 588689, 'ip_decay', 0.0, 0.1, 1.0, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-15 23:20:19
+--------------------------------------------- 588690
+runtask 'aIPavg_period', 16, 588690, 'avg_period', 200, 400, 5000, 16, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Also fixed the target_freq issue. Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-17 12:05:28
+--------------------------------------------- 588756
+runtask 'eIPavg_period', 16, 588756, 'avg_period', 200, 400, 5000, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Also fixed the target_freq issue. Fixed thres_freq = 1 issue, now targets correct firing rate...'
+------------------------- 2020-02-17 12:08:11
+--------------------------------------------- 588757
+runtask 'eIPlr', 16, 588757, 'thres_lr', 0.001, 0.005, 0.051, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-17 12:09:06
+--------------------------------------------- 588758
+runtask 'eIPdecay', 16, 588758, 'ip_decay', 0.0, 0.1, 1.0, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-17 12:10:44
+--------------------------------------------- 588759
+runtask 'eIPtime', 16, 588759, 'sim_time_sec', 150, 150, 1050, 50, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-19 11:53:11
+--------------------------------------------- 588848
+runtask 'eIPjit', 16, 588848, 'jit', 0, 2, 20, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-19 11:53:40
+--------------------------------------------- 588849
+runtask 'eIPnaf', 16, 588849, 'naf', 0, 100, 1000, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-19 11:53:59
+--------------------------------------------- 588850
+runtask 'eIPfrq', 16, 588850, 'frq', 150, 150, 1050, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-19 11:54:28
+--------------------------------------------- 588851
+runtask 'eIPdrp', 16, 588851, 'dropout', 0.0, 0.1, 1.0, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-20 10:35:52
+--------------------------------------------- 588871
+runtask 'eIPfrq', 16, 588871, 'Pf', 1, 1, 10, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-20 10:41:05
+--------------------------------------------- 588872
+runtask 'eIPnaf', 16, 588872, 'Np', 0, 100, 1000, 100, {'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}, 'Run full exps for expontential moving average IP'
+------------------------- 2020-02-28 16:39:01
+--------------------------------------------- 589067
+runtask 'cns150', 24, 589067, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 150, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:39:35
+--------------------------------------------- 589068
+runtask 'cns300', 24, 589068, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 300, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:40:37
+--------------------------------------------- 589069
+runtask 'cns450', 24, 589069, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 450, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:42:20
+--------------------------------------------- 589070
+runtask 'cns150', 24, 589070, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 150, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:42:47
+--------------------------------------------- 589071
+runtask 'cns450', 24, 589071, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 450, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:47:06
+--------------------------------------------- 589072
+runtask 'cns300', 24, 589072, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 300, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:54:15
+--------------------------------------------- 589073
+runtask 'cns150', 24, 589073, 'fgi', 0.0226, 0.0001, 0.0230, 100, {'sim_time_sec', 150, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:54:56
+--------------------------------------------- 589074
+runtask 'cns450', 24, 589074, 'fgi', 0.0226, 0.0001, 0.028, 100, {'sim_time_sec', 450, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 16:55:55
+--------------------------------------------- 589075
+runtask 'cns450', 24, 589075, 'fgi', 0.0226, 0.0001, 0.0228, 100, {'sim_time_sec', 450, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-02-28 22:47:38
+--------------------------------------------- 589076
+runtask 'cns300', 24, 589076, 'fgi', 0.0226, 0.0001, 0.0229, 100, {'sim_time_sec', 300, 'thres_lr', 0.0}, 'Rerun results for OCNS2020 abstract'
+------------------------- 2020-03-02 20:25:32
+--------------------------------------------- 589426
+runtask '1000drp', 24, 589426, 'dropout', 0.0, 0.1, 1.0, 100, {'thres_lr', 0.0, 'Np', 1000}, 'Try Dropout with 1000 as the starter'
+------------------------- 2020-03-03 09:22:47
+--------------------------------------------- 589442
+runtask 'cnsconfound', 24, 589442, 'sim_time_sec', 300, 10, 305, 100, {'thres_lr', 0.0, 'fgi', 0.0228}, 'repeat confounded experiment'
+------------------------- 2020-03-10 13:29:42
+--------------------------------------------- 589742
+runtask 'freejit', 24, 589742, 'freejit', 0, 3, 15, 48, {'thres_lr', 0.0}, 'try new method to shuffle pattern'
+------------------------- 2020-03-10 13:32:27
+--------------------------------------------- 589743
+runtask 'freejit', 24, 589743, 'freejit', 0, 3, 15, 48, {'thres_lr', 0.0}, 'try new method to shuffle pattern'
+------------------------- 2020-03-12 13:32:44
+--------------------------------------------- 590053
+runtask 'a1search', 12, 590053, 'a1', 1, 2, 20, 12, {'thres_lr', 0.0}, 'verify good values for a1 when a2, b1, b2 are 20'
+------------------------- 2020-03-12 14:00:21
+--------------------------------------------- 590054
+runtask 'freejit', 1, 590054, 'freejit', 1, 2, 10, 1, {'thres_lr', 0.0}, 'Try debugging jit'
+------------------------- 2020-03-12 14:04:09
+--------------------------------------------- 590055
+runtask 'freejit', 1, 590055, 'freejit', 1, 2, 10, 1, {'thres_lr', 0.0}, 'Try debugging jit'
+------------------------- 2020-03-12 14:05:09
+--------------------------------------------- 590056
+runtask 'freejit', 1, 590056, 'freejit', 1, 2, 10, 1, {'thres_lr', 0.0}, 'Try debugging jit'
+------------------------- 2020-03-12 14:26:55
+--------------------------------------------- 590058
+runtask 'freejit', 9, 590058, 'freejit', 0, 2, 10, 9, {'thres_lr', 0.0}, 'Retry freejit'
+------------------------- 2020-03-12 15:47:25
+--------------------------------------------- 590057
+runtask 'freejit', 12, 590057, 'freejit', 0, 2, 10, 12, {'thres_lr', 0.0}, 'Retry freejit'
+------------------------- 2020-03-12 16:09:55
+--------------------------------------------- 590059
+runtask 'a1search', 20, 590059, 'a1', 1, 1, 10, 100, {'thres_lr', 0.0}, 'Do an actual search through a1 to see what looks good'
+------------------------- 2020-03-13 05:12:26
+--------------------------------------------- 590060
+runtask 'bigjit', 12, 590060, 'freejit', 3, 1, 10, 48, {'thres_lr', 0.0}, 'Do an actual search through a1 to see what looks good'
+------------------------- 2020-03-13 12:27:02
+--------------------------------------------- 590071
+runtask 'a1300', 12, 590071, 'a1', 1, 1, 5, 48, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'Do an actual search through a1 to see what looks good'
+------------------------- 2020-03-13 13:29:57
+--------------------------------------------- 590086
+runtask 'ft150', 9, 590086, 'fgi', 0.0220, 0.0001, 0.0230, 100, {'thres_lr', 0.0, 'sim_time_sec', 150}, 'Generate FGI plots for different sim_time_secs (150, 300, 450)'
+------------------------- 2020-03-14 00:46:36
+--------------------------------------------- 590082
+runtask 'jit300', 12, 590082, 'jit', 1, 1, 10, 100, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'Rerun JIT with new shuffle method and 300 secs time'
+------------------------- 2020-03-14 14:54:29
+--------------------------------------------- 591773
+runtask 'a1300b', 16, 591773, 'a1', 1, 3, 20, 32, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'see how the a1 search goes when sim_time_sec is 300 and rnage is up to 20'
+------------------------- 2020-03-15 06:59:34
+--------------------------------------------- 591805
+runtask 'a1300b', 9, 591805, 'a1', 1, 3, 20, 18, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'see how the a1 search goes when sim_time_sec is 300 and rnage is up to 20'
+------------------------- 2020-03-15 19:32:36
+--------------------------------------------- 590084
+runtask 'ft300', 12, 590084, 'fgi', 0.0220, 0.0001, 0.0230, 100, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'Generate FGI plots for different sim_time_secs (150, 300, 450)'
+------------------------- 2020-03-15 22:29:11
+--------------------------------------------- 590085
+runtask 'ft450', 12, 590085, 'fgi', 0.0220, 0.0001, 0.0230, 100, {'thres_lr', 0.0, 'sim_time_sec', 450}, 'Generate FGI plots for different sim_time_secs (150, 300, 450)'
+------------------------- 2020-03-16 09:37:48
+--------------------------------------------- 591859
+runtask 'a1full', 12, 591859, 'a1', 1, 1, 20, 100, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'See how the value of a1 influences the performance, full range between 1-20 for 300 sec'
+------------------------- 2020-03-30 20:48:32
+--------------------------------------------- 593582
+runtask 'ujit', 6, 593582, 'jit', 1, 2, 10, 18, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'See how the value of a1 influences the performance, full range between 1-20 for 300 sec'
+------------------------- 2020-03-31 08:25:54
+--------------------------------------------- 593593
+runtask 'ujit', 8, 593593, 'jit', 1, 1, 6, 16, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'See how the value of a1 influences the performance, full range between 1-20 for 300 sec'
+------------------------- 2020-04-16 14:15:09
+--------------------------------------------- 596021
+runtask 'ujit', 8, 596021, 'jit', 1, 1, 6, 16, {'thres_lr', 0.0, 'sim_time_sec', 300}, 'See how the value of a1 influences the performance, full range between 1-20 for 300 sec'

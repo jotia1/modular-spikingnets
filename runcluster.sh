@@ -1,11 +1,11 @@
 #! /bin/bash
 
-#SBATCH --job-name=optimwork
+#SBATCH --job-name=stdp
 #SBATCH --partition=batch
-##SBATCH --nodelist=r730-0
+##SBATCH --nodelist=r730-1
 #SBATCH --mail-type=end
 #SBATCH --mail-user=joshua.arnold1@uqconnect.edu.au
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 
 # Task;
 # Task is the name of the variable to be set before each experiment.
@@ -16,49 +16,55 @@
 #       GENALGO         CUSTOM
 #       THRESHOLDLR     STDP
 #       Any other field in the net structure...
-TASK="'GENALGO'"
-TASKSTART="0.021"
-TASKSTEP="0.005"
-TASKEND="0.03"
+TASK="'w_init'"
+TASKSTART="1"
+TASKSTEP="1"
+TASKEND="6"
 
-NOTES="'Test flexible pipeline to GA'"
+NOTES="'See how the value of a1 influences the performance, full range between 1-20 for 300 sec'"
 
-REPEATS=4
+REPEATS=16    #$SLURM_CPUS_PER_TASK
 
 #VARSTOSET="{'v_thres_to_save', [2001], 'dynamic_threshold', true, 'thres_freq', 5}" 
-VARSTOSET="{'sim_time_sec', 10, 'nu', 0, 'nv', 0, 'fgi', 0.0228}"
+#VARSTOSET="{'thres_lr', 0.021, 'ip_decay', 0.1, 'avg_period', 1000, 'v_thres_to_save', [2001], 'sim_time_sec', 150}"
+VARSTOSET="{'thres_lr', 0.0, 'sim_time_sec', 300}"
 
-VARSTOOPTIMISE="{'Apre', 'Apost', 'taupre', 'taupost'}"
-LBS="[0.1, 0.1, 1, 1]"
-UBS="[2.0, 2.0, 40, 40]"
+VARSTOOPTIMISE="{}"
+LBS="[]"
+UBS="[]"
+
+##    STDP vars to optimise
+#VARSTOOPTIMISE="{'Apre', 'Apost', 'taupre', 'taupost', 'fgi'}"
+#LBS="[0.1, 0.1, 1, 1, 0.0220]"
+#UBS="[2.0, 2.0, 40, 40, 0.0236]"
 
 CPUS=$SLURM_CPUS_PER_TASK
 NAME="'$SLURM_JOB_NAME'"
 
-if [ $TASK = "'jit'" ] ; then
+if [ $TASK = "'xjit'" ] ; then
     TASKSTART="0"
     TASKSTEP="2"
     TASKEND="20"
-elif [ $TASK = "'naf'" ] ; then
+elif [ $TASK = "'xNp'" ] ; then
     TASKSTART="0"
     TASKSTEP="100"
     TASKEND="1000"
-elif [ $TASK = "'Pf'" ] ; then
+elif [ $TASK = "'xPf'" ] ; then
     TASKSTART="1"
     TASKSTEP="1"
     TASKEND="10"
-elif [ $TASK = "'dropout'" ] ; then
+elif [ $TASK = "'xdropout'" ] ; then
     TASKSTART="0.0"
     TASKSTEP="0.1"
     TASKEND="1.0"
-elif [ $TASK = "'fgi'" ] ; then
+elif [ $TASK = "'xfgi'" ] ; then
     TASKSTART="0.0222"
     TASKSTEP="0.0002"
     TASKEND="0.0234"
-elif [ $TASK = "'thres_lr'" ] ; then
-    TASKSTART="0.001"
-    TASKSTEP="0.005"
-    TASKEND="0.041"
+#elif [ $TASK = "'thres_lr'" ] ; then
+#    TASKSTART="0.001"
+#    TASKSTEP="0.005"
+#    TASKEND="0.041"
 fi
 
 if [ $TASK = "'BAYES'" ] || [ $TASK = "'GENALGO'" ] ; then

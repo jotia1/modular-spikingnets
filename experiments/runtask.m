@@ -8,11 +8,6 @@ function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taske
     duplicate_num = mod(slurm_id, 100);
     num_repeats = repeats;
 
-    %   duplicate number,
-    %   parpool, var_range
-    %   patt_fun, ??? = var
-    %   exp_name
-
     output_folder = sprintf('%s_%d', exp_name, slurm_id);
     mkdir(output_folder); 
 
@@ -26,54 +21,20 @@ function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taske
     tpxtn = zeros(num_range, num_repeats);
 
 
-
     parfor repeat = 1 : num_repeats
 
         for count = 1 : num_range
         
             net = defaultnetwork();
+            net.task = task;
 
             %% log info
             net.run_date = datestr(datetime);
-            net.sim_time_sec = sim_time_secs;
-            net.test_seconds = 50;
             net.var_range = var_range;
             
-            net.Tp = 50;
-            net.Df = 10;
             net.num_repeats = num_repeats;
-            net.Np = 500;
-            net.Pf = 5;
-            net.fgi = fgi;
-            net.dropout = 0.0;
-            N_inp = net.group_sizes(1);
             net.output_folder = output_folder;
             
-            %% Simulated annealing params
-            net.use_simulated_annealing = false;
-            net.If = 0.0222;
-            net.Tf = 30;
-
-            %% Intrinsic plasticity
-            net.dynamic_threshold = true;
-            net.thres_rise = nan;
-            net.dv_mem_max = 5;
-            net.thres_freq = 5;
-            net.thres_lr = 0.021;
-            %net.delays_to_save = [2001];
-            net.v_thres_to_save = [2001];
-
-            %% Set alpha beta eta
-            net.a1 = alpha1; net.a2 = alpha2;
-            net.b1 = beta1; net.b2 = beta2;
-            net.nu = etamean; net.nv = etavar;
-            
-            %% STDP 
-            net.Apre = Apre;
-            net.Apost = Apost;
-            net.taupre = taupre;
-            net.taupost = taupost;
-        
             try
                 var = net.var_range(count);
                 
@@ -101,42 +62,8 @@ function [] = runtask(exp_name, cpus, slurm_id, task, taskstart, taskstep, taske
                     net.nv = net.nu;
                 end     
                 
-                
-%                 % Set experiment variable
-%                 net.pattfun = [];
-%                 if strcmp(task, 'FGI')
-%                     net.fgi = var;
-%                 elseif strcmp(task, 'JITTER')
-%                     net.jit = var;
-%                     net.pattfun = @(pinp, pts) gaussianjitter(pinp, pts, net.jit);
-%                 elseif strcmp(task, 'FREQUENCY')
-%                     net.Pf = var;
-%                 elseif strcmp(task, 'DROPOUT')
-%                     net.dropout = var;
-%                     net.pattfun = @(pinp, pts) patterndropoutfunc(pinp, pts, net.dropout);
-%                 elseif strcmp(task, 'NUMAFFERENTS')
-%                     net.Np = var;
-%                 elseif strcmp(task, 'GRID')
-%                     [alpha, beta] = ind2sub([grid_size, grid_size], var);
-%                     net.a1 = alpha; net.a2 = alpha;
-%                     net.b1 = beta; net.b2 = beta;
-%                     net.nv = net.nu;
-%                 elseif strcmp(task, 'TIME')
-%                     net.sim_time_sec = var;
-%                 elseif strcmp(task, 'CUSTOM')
-%                     net.custom = 'New IP rule testing';
-%                     net.v_thres_to_save = [2001];
-%                     net.dynamic_threshold = true;
-%                     net.thres_freq = 5;
-%                     net.thres_lr = var;
-%                     
-%                 else
-%                     fprintf('INVALID TASK: %s\n', task); 
-%                     assert false
-%                 end
-
                 [net.pinp, net.pts] = generateuniformpattern( net.Tp, net.Np );
-                net.data_generator = @() balancedpoisson(net.Tp, net.Df, N_inp, net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
+                net.data_generator = @() balancedpoisson(net.Tp, net.Df, net.group_sizes(1), net.Np, net.Pf, net.pinp, net.pts, net.pattfun, net.dropout);
                 net.repeat = repeat;
                 net.count = count;
 

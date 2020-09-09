@@ -73,7 +73,8 @@ anneal_freq_ms = 500;
 
 % Exponential moving average parameters
 last_avg_period = 0;
-running_avg = net.avg_period * (net.Pf / ms_per_sec);%net.thres_freq;
+target_freq = net.avg_period * (net.Pf / ms_per_sec);%net.thres_freq;
+running_avg = target_freq;
 cur_avg = 0;
 
 if net.fixed_integrals
@@ -97,6 +98,7 @@ out.timing_info.profiling_tocs = zeros(10, 10 * 1000);  % Total of tocs
 out.spike_time_trace = [];
 out.offsets = [];
 debug = zeros(sim_time_ms, 1);
+debug_running_avg = zeros(sim_time_ms, 1);
 
 if net.print_progress
     disp('Starting simulation');
@@ -108,6 +110,11 @@ for sec = 1 : net.sim_time_sec
     
     if isa(net.data_generator,'function_handle')
         [inp_trimmed, ts_trimmed, ~, ~, offsets] = net.data_generator();
+        if strcmp(net.task, 'freejit')
+            ts_trimmed = mod(ts_trimmed + round(randn(size(ts_trimmed)) .* net.freejit) - 1, 1000) + 1;
+            fprintf('Shuffling input as per jit:\n');
+            disp(size(ts_trimmed));
+        end
         ts_trimmed = ts_trimmed + (sec -1) * 1000;
         out.offsets = [out.offsets, offsets + (sec -1) * 1000];
         % TODO : offsets start at time index 0, but ms loop below starts at
@@ -305,12 +312,13 @@ for sec = 1 : net.sim_time_sec
             running_avg = running_avg * (1 - net.ip_decay) + cur_avg * net.ip_decay;
             cur_avg = 0;
             last_avg_period = time;
-            change = (running_avg - net.thres_freq) * net.thres_lr;
+            change = (running_avg - target_freq) * net.thres_lr;
         end
             
         v_thres(N_inp + 1 : end) = v_thres(N_inp + 1 : end) + change;
         v_threst(:, time) = v_thres(net.v_thres_to_save)';
         debug(time) = change; %dv_thres(N_inp + 1);
+        debug_run_avg(time) = running_avg;
 
         %% Intrinsic plasticity threshold decay
         %v_thres(N_inp + 1 :end) = v_thres(N_inp + 1 :end) - (net.thres_rise * net.thres_freq / ms_per_sec);
@@ -362,6 +370,7 @@ out.w = w;
 out.variance = variance;
 out.delays = delays;
 out.debug = debug;
+out.debug_run_avg = debug_run_avg;
 
 end
 
